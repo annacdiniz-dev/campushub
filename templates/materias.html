@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block titulo %}Matérias · CampusHub{% endblock %}
+
+{% block conteudo %}
+<section class="painel-topo">
+    <div>
+        <h1>Minhas matérias</h1>
+        <p class="frase">{{ materias|length }} matéria{{ 's' if materias|length != 1 }} cadastrada{{ 's' if materias|length != 1 }}</p>
+    </div>
+    <div class="acoes">
+        <a href="{{ url_for('materias.nova') }}" class="botao">+ Nova matéria</a>
+    </div>
+</section>
+
+{% if materias %}
+<section class="materias-grade">
+    {% for m in materias %}
+    <div class="materia-card" style="--cor: {{ m.cor }}">
+        <div class="materia-topo">
+            <h3>{{ m.nome }}</h3>
+            <span class="contador" title="Atividades">{{ m.atividades|length }}</span>
+        </div>
+        <p><i data-lucide="user"></i> {{ m.professor or 'Sem professor' }}</p>
+        <p><i data-lucide="calendar"></i> {{ m.semestre or 'Sem semestre' }}</p>
+
+        <div class="materia-acoes">
+            <a href="{{ url_for('materias.editar', materia_id=m.id) }}" class="link-botao">
+                <i data-lucide="pencil"></i> Editar
+            </a>
+            {# Excluir usa POST (formulário), nunca um link comum: é mais seguro #}
+            <form method="POST" action="{{ url_for('materias.excluir', materia_id=m.id) }}" data-nome="{{ m.nome }}"
+                  onsubmit="return confirm('Excluir a matéria ' + this.dataset.nome + '? As atividades dela também serão apagadas.');">
+                <button type="submit" class="link-botao perigo"><i data-lucide="trash-2"></i> Excluir</button>
+            </form>
+        </div>
+    </div>
+    {% endfor %}
+</section>
+{% else %}
+<div class="bloco">
+    <div class="vazio">
+        <p>Você ainda não cadastrou matérias.</p>
+        <a href="{{ url_for('materias.nova') }}" class="botao botao-pequeno">+ Adicionar a primeira</a>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

@@ -10,8 +10,8 @@
         <p class="frase">Seu eu do futuro agradece por estar aqui!</p>
     </div>
     <div class="acoes">
-        {# Botões ainda sem ação: vão funcionar na próxima etapa #}
-        <button type="button" class="botao botao-contorno">+ Nova matéria</button>
+        <a href="{{ url_for('materias.nova') }}" class="botao botao-contorno">+ Nova matéria</a>
+        {# Ainda sem ação: vai funcionar na etapa de atividades #}
         <button type="button" class="botao">+ Nova atividade</button>
     </div>
 </section>
@@ -66,7 +66,7 @@
     <div class="bloco">
         <div class="bloco-topo">
             <h2><i data-lucide="book-open"></i> Minhas matérias</h2>
-            <button type="button" class="link-botao">Ver todas</button>
+            <a href="{{ url_for('materias.listar') }}" class="link-botao">Ver todas</a>
         </div>
         {% if materias %}
             <ul class="lista">
@@ -84,7 +84,7 @@
         {% else %}
             <div class="vazio">
                 <p>Você ainda não cadastrou matérias.</p>
-                <button type="button" class="botao botao-pequeno">+ Adicionar a primeira</button>
+                <a href="{{ url_for('materias.nova') }}" class="botao botao-pequeno">+ Adicionar a primeira</a>
             </div>
         {% endif %}
     </div>

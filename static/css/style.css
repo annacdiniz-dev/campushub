@@ -265,3 +265,51 @@ h2 .lucide, h3 .lucide { color: var(--roxo); margin-right: 4px; }
 }
 .topo nav a.icone-conta:hover { background: var(--roxo); color: var(--branco); }
 .icone-conta .lucide { width: 18px; height: 18px; vertical-align: 0; }
+
+/* ================= Matérias ================= */
+.materias-grade {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 18px;
+}
+.materia-card {
+    background: var(--branco);
+    border: 1px solid var(--borda);
+    border-top: 6px solid var(--cor);   /* faixa com a cor da matéria */
+    border-radius: var(--raio);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.materia-topo { display: flex; justify-content: space-between; align-items: start; gap: 8px; }
+.materia-topo h3 { font-size: 1.1rem; }
+.materia-card p { color: var(--texto-suave); font-size: .92rem; }
+.materia-card p .lucide { margin-right: 4px; }
+.materia-acoes {
+    display: flex;
+    justify-content: flex-end;
+    gap: 14px;
+    margin-top: 8px;
+    padding-top: 12px;
+    border-top: 1px solid var(--borda);
+}
+.link-botao { display: inline-flex; align-items: center; gap: 4px; font-size: .9rem; }
+.link-botao.perigo { color: #D64545; }
+
+/* Escolha de cor no formulário */
+.cores { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
+.cor-opcao input { position: absolute; opacity: 0; }
+.cor-opcao span {
+    display: block;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 3px solid var(--branco);
+    box-shadow: 0 0 0 2px var(--borda);
+    transition: transform .15s;
+}
+.cor-opcao span:hover { transform: scale(1.1); }
+.cor-opcao input:checked + span { box-shadow: 0 0 0 3px var(--texto); }
+.cor-opcao input:focus-visible + span { outline: 2px solid var(--roxo); outline-offset: 3px; }

@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block titulo %}{{ 'Editar' if editando else 'Nova' }} matéria · CampusHub{% endblock %}
+
+{% block conteudo %}
+<div class="caixa-form">
+    <h2>{{ 'Editar matéria' if editando else 'Nova matéria' }}</h2>
+    <p class="subtitulo">{{ 'Ajuste o que precisar.' if editando else 'Só o nome é obrigatório.' }}</p>
+
+    <form method="POST">
+        <label for="nome">Nome da matéria *</label>
+        <input type="text" id="nome" name="nome" value="{{ materia.nome or '' }}"
+               placeholder="Ex.: Estrutura de Dados II" maxlength="100" required autofocus>
+
+        <label for="professor">Professor(a)</label>
+        <input type="text" id="professor" name="professor" value="{{ materia.professor or '' }}"
+               placeholder="Ex.: Prof. Maria" maxlength="100">
+
+        <label for="semestre">Semestre</label>
+        <input type="text" id="semestre" name="semestre" value="{{ materia.semestre or '' }}"
+               placeholder="Ex.: 2026.2" maxlength="20">
+
+        <label>Cor</label>
+        <div class="cores">
+            {% for c in ['#6C63FF', '#FF6B6B', '#FFA94D', '#FFD43B', '#51CF66', '#22B8CF', '#339AF0', '#F06595'] %}
+            <label class="cor-opcao">
+                <input type="radio" name="cor" value="{{ c }}" {% if (materia.cor or '#6C63FF')|upper == c %}checked{% endif %}>
+                <span style="background: {{ c }}"></span>
+            </label>
+            {% endfor %}
+        </div>
+
+        <button type="submit" class="botao botao-cheio">{{ 'Salvar alterações' if editando else 'Criar matéria' }}</button>
+    </form>
+
+    <p class="troca"><a href="{{ url_for('materias.listar') }}">Cancelar</a></p>
+</div>
+{% endblock %}

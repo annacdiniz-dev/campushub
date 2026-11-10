@@ -5,6 +5,7 @@ from flask import Flask, redirect, render_template, url_for
 from flask_login import LoginManager, current_user, login_required
 
 from auth import auth
+from materias import materias
 from models import Atividade, Materia, Usuario, db
 
 app = Flask(__name__)
@@ -29,8 +30,9 @@ def carregar_usuario(usuario_id):
     return db.session.get(Usuario, int(usuario_id))
 
 
-# Conecta as rotas de cadastro/login/logout (arquivo auth.py)
-app.register_blueprint(auth)
+# Conecta os "pedaços" do site
+app.register_blueprint(auth)       # cadastro, login, logout (auth.py)
+app.register_blueprint(materias)   # matérias (materias.py)
 
 # Cria as tabelas que ainda não existem no banco
 with app.app_context():
