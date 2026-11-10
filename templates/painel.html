@@ -2,8 +2,126 @@
 {% block titulo %}Painel · CampusHub{% endblock %}
 
 {% block conteudo %}
-<section class="hero hero-esquerda">
-    <h1>Olá, {{ current_user.nome.split()[0] }}! 👋</h1>
-    <p>Este é o seu painel. Em breve: suas matérias, atividades e prazos aqui.</p>
+
+{# ---------- Cabeçalho: saudação + botões principais ---------- #}
+<section class="painel-topo">
+    <div>
+        <h1>Olá, {{ current_user.nome.split()[0] }}!</h1>
+        <p class="frase">Seu eu do futuro agradece por estar aqui!</p>
+    </div>
+    <div class="acoes">
+        {# Botões ainda sem ação: vão funcionar na próxima etapa #}
+        <button type="button" class="botao botao-contorno">+ Nova matéria</button>
+        <button type="button" class="botao">+ Nova atividade</button>
+    </div>
 </section>
+
+{# ---------- Cartões de resumo ---------- #}
+<section class="resumo">
+    <div class="resumo-card">
+        <span class="resumo-numero">{{ resumo.pendentes }}</span>
+        <span class="resumo-rotulo"><i data-lucide="clock"></i> Pendentes</span>
+    </div>
+    <div class="resumo-card">
+        <span class="resumo-numero">{{ resumo.andamento }}</span>
+        <span class="resumo-rotulo"><i data-lucide="loader"></i> Em andamento</span>
+    </div>
+    <div class="resumo-card">
+        <span class="resumo-numero">{{ resumo.concluidas }}</span>
+        <span class="resumo-rotulo"><i data-lucide="circle-check"></i> Concluídas</span>
+    </div>
+    <div class="resumo-card destaque">
+        <span class="resumo-numero">{{ resumo.semana }}</span>
+        <span class="resumo-rotulo"><i data-lucide="flame"></i> Vencem em 7 dias</span>
+    </div>
+</section>
+
+{# ---------- Duas colunas: prazos e matérias ---------- #}
+<section class="painel-grade">
+
+    <div class="bloco">
+        <div class="bloco-topo">
+            <h2><i data-lucide="calendar"></i> Próximos prazos</h2>
+        </div>
+        {% if proximos %}
+            <ul class="lista">
+                {% for a in proximos %}
+                <li class="lista-item">
+                    <span class="bolinha" style="background: {{ a.materia.cor }}"></span>
+                    <div class="lista-texto">
+                        <strong>{{ a.titulo }}</strong>
+                        <small>{{ a.materia.nome }} · {{ a.tipo }}</small>
+                    </div>
+                    <span class="data">{{ a.data_entrega.strftime('%d/%m') }}</span>
+                </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <div class="vazio">
+                <p>Nenhum prazo chegando. Aproveite!</p>
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="bloco">
+        <div class="bloco-topo">
+            <h2><i data-lucide="book-open"></i> Minhas matérias</h2>
+            <button type="button" class="link-botao">Ver todas</button>
+        </div>
+        {% if materias %}
+            <ul class="lista">
+                {% for m in materias %}
+                <li class="lista-item">
+                    <span class="bolinha" style="background: {{ m.cor }}"></span>
+                    <div class="lista-texto">
+                        <strong>{{ m.nome }}</strong>
+                        <small>{{ m.professor or 'Sem professor' }}</small>
+                    </div>
+                    <span class="contador">{{ m.atividades|length }}</span>
+                </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <div class="vazio">
+                <p>Você ainda não cadastrou matérias.</p>
+                <button type="button" class="botao botao-pequeno">+ Adicionar a primeira</button>
+            </div>
+        {% endif %}
+    </div>
+
+</section>
+
+{# ---------- Lista de atividades com filtros ---------- #}
+<section class="bloco">
+    <div class="bloco-topo">
+        <h2><i data-lucide="clipboard-list"></i> Atividades</h2>
+        <div class="filtros">
+            <button type="button" class="filtro ativo">Todas</button>
+            <button type="button" class="filtro">Pendentes</button>
+            <button type="button" class="filtro">Em andamento</button>
+            <button type="button" class="filtro">Concluídas</button>
+        </div>
+    </div>
+
+    {% if atividades %}
+        <ul class="lista">
+            {% for a in atividades %}
+            <li class="lista-item">
+                <span class="bolinha" style="background: {{ a.materia.cor }}"></span>
+                <div class="lista-texto">
+                    <strong>{{ a.titulo }}</strong>
+                    <small>{{ a.materia.nome }} · {{ a.tipo }}{% if a.em_grupo %} · <i data-lucide="users" class="icone-mini"></i> Grupo{% endif %}</small>
+                    <div class="barra"><div class="barra-cheia" style="width: {{ a.progresso }}%"></div></div>
+                </div>
+                <span class="etiqueta etiqueta-{{ a.status|lower|replace(' ', '-') }}">{{ a.status }}</span>
+            </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <div class="vazio">
+            <p>Nenhuma atividade por aqui ainda.<br>Cadastre uma matéria e depois suas provas e trabalhos.</p>
+        </div>
+    {% endif %}
+</section>
+
 {% endblock %}

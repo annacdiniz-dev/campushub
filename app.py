@@ -1,10 +1,11 @@
 import os
+from datetime import date, timedelta
 
 from flask import Flask, redirect, render_template, url_for
 from flask_login import LoginManager, current_user, login_required
 
 from auth import auth
-from models import Usuario, db
+from models import Atividade, Materia, Usuario, db
 
 app = Flask(__name__)
 
@@ -46,7 +47,40 @@ def home():
 @app.route("/painel")
 @login_required  # só entra quem está logado
 def painel():
-    return render_template("painel.html")
+    # Todas as atividades do usuário logado (passando pelas matérias dele)
+    atividades = (
+        Atividade.query.join(Materia)
+        .filter(Materia.usuario_id == current_user.id)
+        .all()
+    )
+
+    hoje = date.today()
+    em_7_dias = hoje + timedelta(days=7)
+
+    # Números dos cartões do topo
+    resumo = {
+        "pendentes": sum(1 for a in atividades if a.status == "Pendente"),
+        "andamento": sum(1 for a in atividades if a.status == "Em andamento"),
+        "concluidas": sum(1 for a in atividades if a.status == "Concluído"),
+        "semana": sum(
+            1 for a in atividades
+            if a.data_entrega and hoje <= a.data_entrega <= em_7_dias and a.status != "Concluído"
+        ),
+    }
+
+    # Próximas entregas não concluídas, da mais próxima para a mais distante
+    proximos = sorted(
+        (a for a in atividades if a.data_entrega and a.data_entrega >= hoje and a.status != "Concluído"),
+        key=lambda a: a.data_entrega,
+    )[:5]
+
+    return render_template(
+        "painel.html",
+        resumo=resumo,
+        proximos=proximos,
+        atividades=atividades,
+        materias=current_user.materias,
+    )
 
 
 if __name__ == "__main__":

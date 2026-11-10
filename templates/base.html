@@ -14,7 +14,10 @@
         <nav>
             {% if current_user.is_authenticated %}
                 <a href="{{ url_for('painel') }}">Painel</a>
-                <span class="ola">Olá, {{ current_user.nome.split()[0] }}</span>
+                {# Ícone da conta: a página "Minha conta" ainda vai ser criada #}
+                <a href="#" class="icone-conta" title="Minha conta" aria-label="Minha conta">
+                    <i data-lucide="user"></i>
+                </a>
                 <a href="{{ url_for('auth.logout') }}">Sair</a>
             {% else %}
                 <a href="{{ url_for('auth.login') }}">Entrar</a>
@@ -35,5 +38,8 @@
     </main>
 
     <footer class="rodape">CampusHub · feito para estudantes</footer>
+    {# Biblioteca de ícones Lucide: troca cada <i data-lucide="..."> por um desenho #}
+    <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+    <script>lucide.createIcons();</script>
 </body>
 </html>
