@@ -1,16 +1,23 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CampusHub</title>
-</head>
-<body>
-    
-    <h1>Bem-vindo(a) ao CampusHub!</h1>
+{% extends "base.html" %}
 
-    <p>Seu eu do futuro agradece.
-Organize sua vida acadêmica hoje.</p>
+{% block conteudo %}
+<section class="hero">
+    <h1>Bem-vindo(a) ao Campus<span>Hub</span>!</h1>
+    <p>Seu eu do futuro agradece. Organize sua vida acadêmica hoje.</p>
+</section>
 
-</body>
-</html>
+<section class="cards">
+    <div class="card">
+        <h3>📚 Matérias</h3>
+        <p>Todas as suas disciplinas em um só lugar, cada uma com sua cor.</p>
+    </div>
+    <div class="card">
+        <h3>📝 Atividades</h3>
+        <p>Provas, trabalhos e projetos com prazo, prioridade e status.</p>
+    </div>
+    <div class="card">
+        <h3>✅ Checklists</h3>
+        <p>Quebre cada entrega em passos e veja o progresso subir.</p>
+    </div>
+</section>
+{% endblock %}
