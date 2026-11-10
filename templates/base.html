@@ -12,11 +12,25 @@
     <header class="topo">
         <a href="{{ url_for('home') }}" class="logo">Campus<span>Hub</span></a>
         <nav>
-            <a href="{{ url_for('home') }}">Início</a>
+            {% if current_user.is_authenticated %}
+                <a href="{{ url_for('painel') }}">Painel</a>
+                <span class="ola">Olá, {{ current_user.nome.split()[0] }}</span>
+                <a href="{{ url_for('auth.logout') }}">Sair</a>
+            {% else %}
+                <a href="{{ url_for('auth.login') }}">Entrar</a>
+                <a href="{{ url_for('auth.cadastro') }}" class="botao botao-pequeno">Criar conta</a>
+            {% endif %}
         </nav>
     </header>
 
     <main class="conteudo">
+        {# Mensagens rápidas (ex.: "Conta criada!", "Senha incorreta") #}
+        {% with mensagens = get_flashed_messages(with_categories=true) %}
+            {% for categoria, mensagem in mensagens %}
+                <div class="alerta alerta-{{ categoria }}">{{ mensagem }}</div>
+            {% endfor %}
+        {% endwith %}
+
         {% block conteudo %}{% endblock %}
     </main>
 

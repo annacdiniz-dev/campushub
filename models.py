@@ -1,4 +1,6 @@
+from flask_login import UserMixin
 from flask_sqlalchemy import SQLAlchemy
+from werkzeug.security import check_password_hash, generate_password_hash
 
 db = SQLAlchemy()
 
@@ -8,7 +10,7 @@ STATUS = ["Pendente", "Em andamento", "Concluído"]
 PRIORIDADES = ["Baixa", "Média", "Alta"]
 
 
-class Usuario(db.Model):
+class Usuario(UserMixin, db.Model):  # UserMixin ensina o Flask-Login a lidar com o usuário
     __tablename__ = "usuarios"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -19,6 +21,14 @@ class Usuario(db.Model):
 
     # Atalho: usuario.materias -> lista de matérias desse usuário
     materias = db.relationship("Materia", back_populates="usuario", cascade="all, delete-orphan")
+
+    def definir_senha(self, senha):
+        """Embaralha a senha antes de guardar (nunca salvamos a senha original)."""
+        self.senha_hash = generate_password_hash(senha)
+
+    def verificar_senha(self, senha):
+        """Confere se a senha digitada bate com a embaralhada."""
+        return check_password_hash(self.senha_hash, senha)
 
 
 class Materia(db.Model):

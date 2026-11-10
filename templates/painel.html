@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block titulo %}Painel · CampusHub{% endblock %}
+
+{% block conteudo %}
+<section class="hero hero-esquerda">
+    <h1>Olá, {{ current_user.nome.split()[0] }}! 👋</h1>
+    <p>Este é o seu painel. Em breve: suas matérias, atividades e prazos aqui.</p>
+</section>
+{% endblock %}

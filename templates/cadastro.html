@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block titulo %}Criar conta · CampusHub{% endblock %}
+
+{% block conteudo %}
+<div class="caixa-form">
+    <h2>Criar conta</h2>
+    <p class="subtitulo">Leva menos de um minuto.</p>
+
+    <form method="POST">
+        <label for="nome">Nome</label>
+        <input type="text" id="nome" name="nome" value="{{ nome or '' }}" required>
+
+        <label for="email">E-mail</label>
+        <input type="email" id="email" name="email" value="{{ email or '' }}" required>
+
+        <label for="senha">Senha</label>
+        <input type="password" id="senha" name="senha" minlength="6" required>
+
+        <label for="confirmar">Confirmar senha</label>
+        <input type="password" id="confirmar" name="confirmar" minlength="6" required>
+
+        <button type="submit" class="botao botao-cheio">Criar conta</button>
+    </form>
+
+    <p class="troca">Já tem conta? <a href="{{ url_for('auth.login') }}">Entrar</a></p>
+</div>
+{% endblock %}
