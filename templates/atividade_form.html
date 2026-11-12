@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block titulo %}{{ 'Editar' if editando else 'Nova' }} atividade · CampusHub{% endblock %}
+
+{% block conteudo %}
+<div class="caixa-form">
+    <h2>{{ 'Editar atividade' if editando else 'Nova atividade' }}</h2>
+    <p class="subtitulo">{{ 'Ajuste o que precisar.' if editando else 'Prova, trabalho, projeto... o que vier.' }}</p>
+
+    <form method="POST">
+        <label for="titulo">Título *</label>
+        <input type="text" id="titulo" name="titulo" value="{{ atividade.titulo or '' }}"
+               placeholder="Ex.: P1 de Cálculo" maxlength="100" required autofocus>
+
+        <label for="materia_id">Matéria *</label>
+        <select id="materia_id" name="materia_id" required>
+            {% for m in materias %}
+            <option value="{{ m.id }}" {% if atividade.materia_id == m.id %}selected{% endif %}>{{ m.nome }}</option>
+            {% endfor %}
+        </select>
+
+        <div class="duas-colunas">
+            <div>
+                <label for="tipo">Tipo</label>
+                <select id="tipo" name="tipo">
+                    {% for t in tipos %}
+                    <option {% if atividade.tipo == t %}selected{% endif %}>{{ t }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label for="prioridade">Prioridade</label>
+                <select id="prioridade" name="prioridade">
+                    {% for p in prioridades %}
+                    <option {% if atividade.prioridade == p %}selected{% endif %}>{{ p }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <div class="duas-colunas">
+            <div>
+                <label for="data_entrega">Data de entrega</label>
+                {# type="date" sempre usa o formato AAAA-MM-DD, por isso o isoformat() #}
+                <input type="date" id="data_entrega" name="data_entrega"
+                       value="{{ atividade.data_entrega.isoformat() if atividade.data_entrega else '' }}">
+            </div>
+            <div>
+                <label for="status">Status</label>
+                <select id="status" name="status">
+                    {% for s in status_opcoes %}
+                    <option {% if atividade.status == s %}selected{% endif %}>{{ s }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <label for="descricao">Descrição / conteúdo</label>
+        <textarea id="descricao" name="descricao" rows="4"
+                  placeholder="Ex.: Integrais por partes, substituição trigonométrica...">{{ atividade.descricao or '' }}</textarea>
+
+        <label class="check">
+            <input type="checkbox" name="em_grupo" {% if atividade.em_grupo %}checked{% endif %}>
+            É em grupo
+        </label>
+
+        <button type="submit" class="botao botao-cheio">{{ 'Salvar alterações' if editando else 'Criar atividade' }}</button>
+    </form>
+
+    {% if editando %}
+    <form method="POST" action="{{ url_for('atividades.excluir', atividade_id=atividade_id) }}" class="form-excluir"
+          onsubmit="return confirm('Excluir esta atividade?');">
+        <button type="submit" class="link-botao perigo"><i data-lucide="trash-2"></i> Excluir atividade</button>
+    </form>
+    {% endif %}
+
+    <p class="troca"><a href="{{ url_for('painel') }}">Cancelar</a></p>
+</div>
+{% endblock %}

@@ -110,7 +110,28 @@ button { font: inherit; }
     font: inherit;
     margin-bottom: 16px;
 }
-.caixa-form input:focus { outline: 2px solid var(--roxo); border-color: transparent; }
+.caixa-form input[type="date"],
+.caixa-form select,
+.caixa-form textarea {
+    padding: 11px 12px;
+    border: 1px solid var(--borda);
+    border-radius: 8px;
+    font: inherit;
+    margin-bottom: 16px;
+    background: var(--branco);
+    width: 100%;
+}
+.caixa-form textarea { resize: vertical; }
+.caixa-form input:focus,
+.caixa-form select:focus,
+.caixa-form textarea:focus { outline: 2px solid var(--roxo); border-color: transparent; }
+.duas-colunas { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.form-excluir { margin-top: 16px; text-align: center; }
+
+/* Atividades no painel */
+.titulo-link { color: inherit; text-decoration: none; }
+.titulo-link:hover { color: var(--roxo); }
+select.etiqueta { border: none; cursor: pointer; font-family: inherit; appearance: none; text-align: center; }
 .check { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; font-weight: 400 !important; }
 .troca { text-align: center; margin-top: 20px; color: var(--texto-suave); }
 .troca a { color: var(--roxo); font-weight: 600; }

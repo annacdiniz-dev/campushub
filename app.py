@@ -4,9 +4,10 @@ from datetime import date, timedelta
 from flask import Flask, redirect, render_template, url_for
 from flask_login import LoginManager, current_user, login_required
 
+from atividades import atividades
 from auth import auth
 from materias import materias
-from models import Atividade, Materia, Usuario, db
+from models import STATUS, Atividade, Materia, Usuario, db
 
 app = Flask(__name__)
 
@@ -33,6 +34,7 @@ def carregar_usuario(usuario_id):
 # Conecta os "pedaços" do site
 app.register_blueprint(auth)       # cadastro, login, logout (auth.py)
 app.register_blueprint(materias)   # matérias (materias.py)
+app.register_blueprint(atividades) # provas, trabalhos, projetos (atividades.py)
 
 # Cria as tabelas que ainda não existem no banco
 with app.app_context():
@@ -82,6 +84,7 @@ def painel():
         proximos=proximos,
         atividades=atividades,
         materias=current_user.materias,
+        status_opcoes=STATUS,
     )
 
 

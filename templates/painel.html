@@ -11,8 +11,7 @@
     </div>
     <div class="acoes">
         <a href="{{ url_for('materias.nova') }}" class="botao botao-contorno">+ Nova matéria</a>
-        {# Ainda sem ação: vai funcionar na etapa de atividades #}
-        <button type="button" class="botao">+ Nova atividade</button>
+        <a href="{{ url_for('atividades.nova') }}" class="botao">+ Nova atividade</a>
     </div>
 </section>
 
@@ -109,11 +108,19 @@
             <li class="lista-item">
                 <span class="bolinha" style="background: {{ a.materia.cor }}"></span>
                 <div class="lista-texto">
-                    <strong>{{ a.titulo }}</strong>
-                    <small>{{ a.materia.nome }} · {{ a.tipo }}{% if a.em_grupo %} · <i data-lucide="users" class="icone-mini"></i> Grupo{% endif %}</small>
+                    <a href="{{ url_for('atividades.editar', atividade_id=a.id) }}" class="titulo-link"><strong>{{ a.titulo }}</strong></a>
+                    <small>{{ a.materia.nome }} · {{ a.tipo }}{% if a.data_entrega %} · {{ a.data_entrega.strftime('%d/%m') }}{% endif %}{% if a.em_grupo %} · <i data-lucide="users" class="icone-mini"></i> Grupo{% endif %}</small>
                     <div class="barra"><div class="barra-cheia" style="width: {{ a.progresso }}%"></div></div>
                 </div>
-                <span class="etiqueta etiqueta-{{ a.status|lower|replace(' ', '-') }}">{{ a.status }}</span>
+                {# Trocar o status: ao escolher outra opção, o formulário se envia sozinho #}
+                <form method="POST" action="{{ url_for('atividades.mudar_status', atividade_id=a.id) }}">
+                    <select name="status" class="etiqueta etiqueta-{{ a.status|lower|replace(' ', '-') }}"
+                            onchange="this.form.submit()" aria-label="Status de {{ a.titulo }}">
+                        {% for s in status_opcoes %}
+                        <option {% if a.status == s %}selected{% endif %}>{{ s }}</option>
+                        {% endfor %}
+                    </select>
+                </form>
             </li>
             {% endfor %}
         </ul>
