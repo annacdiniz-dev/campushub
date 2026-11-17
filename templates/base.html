@@ -15,11 +15,20 @@
             {% if current_user.is_authenticated %}
                 <a href="{{ url_for('painel') }}">Painel</a>
                 <a href="{{ url_for('materias.listar') }}">Matérias</a>
-                {# Ícone da conta: a página "Minha conta" ainda vai ser criada #}
-                <a href="#" class="icone-conta" title="Minha conta" aria-label="Minha conta">
-                    <i data-lucide="user"></i>
-                </a>
-                <a href="{{ url_for('auth.logout') }}">Sair</a>
+                {# Menu da conta: o botão abre/fecha a lista (o JavaScript lá embaixo cuida disso) #}
+                <div class="menu-conta">
+                    <button type="button" class="icone-conta" id="botao-conta"
+                            aria-label="Minha conta" aria-haspopup="true" aria-expanded="false" aria-controls="lista-conta">
+                        <i data-lucide="user"></i>
+                    </button>
+                    <div class="menu-lista" id="lista-conta" hidden>
+                        <p class="menu-nome">{{ current_user.nome }}</p>
+                        {# Ainda não existem: ficam visíveis, mas marcados como "em breve" #}
+                        <span class="menu-item desativado"><i data-lucide="user-pen"></i> Editar perfil <small>em breve</small></span>
+                        <span class="menu-item desativado"><i data-lucide="history"></i> Histórico <small>em breve</small></span>
+                        <a href="{{ url_for('auth.logout') }}" class="menu-item perigo"><i data-lucide="log-out"></i> Sair</a>
+                    </div>
+                </div>
             {% else %}
                 <a href="{{ url_for('auth.login') }}">Entrar</a>
                 <a href="{{ url_for('auth.cadastro') }}" class="botao botao-pequeno">Criar conta</a>
@@ -41,6 +50,34 @@
     <footer class="rodape">CampusHub · feito para estudantes</footer>
     {# Biblioteca de ícones Lucide: troca cada <i data-lucide="..."> por um desenho #}
     <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
-    <script>lucide.createIcons();</script>
+    <script>
+        lucide.createIcons();
+
+        // ----- Menu da conta (bonequinho) -----
+        const botaoConta = document.getElementById("botao-conta");
+        const listaConta = document.getElementById("lista-conta");
+
+        if (botaoConta) {  // só existe quando a pessoa está logada
+            function abrirMenu(abrir) {
+                listaConta.hidden = !abrir;
+                botaoConta.setAttribute("aria-expanded", abrir);
+            }
+            // Clicou no bonequinho: abre se estava fechado, fecha se estava aberto
+            botaoConta.addEventListener("click", (e) => {
+                e.stopPropagation();
+                abrirMenu(listaConta.hidden);
+            });
+            // Clicou em qualquer outro lugar da página: fecha
+            document.addEventListener("click", (e) => {
+                if (!listaConta.contains(e.target)) abrirMenu(false);
+            });
+            // Apertou Esc: fecha
+            document.addEventListener("keydown", (e) => {
+                if (e.key === "Escape") abrirMenu(false);
+            });
+        }
+    </script>
+    {# Cada página pode colocar o seu próprio JavaScript aqui #}
+    {% block scripts %}{% endblock %}
 </body>
 </html>

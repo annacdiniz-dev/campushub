@@ -1,6 +1,7 @@
 {# Uma linha de atividade. Usado no painel e na página da matéria com {% include %}.
    Precisa receber: "a" (a atividade), "status_opcoes" e "voltar" (para onde ir depois de mudar o status). #}
-<li class="lista-item">
+{# data-status: guarda o status na própria linha, para o filtro do painel (JavaScript) ler #}
+<li class="lista-item" data-status="{{ a.status }}">
     <span class="bolinha" style="background: {{ a.materia.cor }}"></span>
     <div class="lista-texto">
         <a href="{{ url_for('atividades.editar', atividade_id=a.id, voltar=voltar) }}" class="titulo-link"><strong>{{ a.titulo }}</strong></a>

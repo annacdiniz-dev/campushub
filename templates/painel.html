@@ -91,21 +91,26 @@
 <section class="bloco">
     <div class="bloco-topo">
         <h2><i data-lucide="clipboard-list"></i> Atividades</h2>
-        <div class="filtros">
-            <button type="button" class="filtro ativo">Todas</button>
-            <button type="button" class="filtro">Pendentes</button>
-            <button type="button" class="filtro">Em andamento</button>
-            <button type="button" class="filtro">Concluídas</button>
+        {# data-filtro: qual status cada botão mostra ("" = todos) #}
+        <div class="filtros" role="group" aria-label="Filtrar atividades">
+            <button type="button" class="filtro ativo" data-filtro="" aria-pressed="true">Todas</button>
+            <button type="button" class="filtro" data-filtro="Pendente" aria-pressed="false">Pendentes</button>
+            <button type="button" class="filtro" data-filtro="Em andamento" aria-pressed="false">Em andamento</button>
+            <button type="button" class="filtro" data-filtro="Concluído" aria-pressed="false">Concluídas</button>
         </div>
     </div>
 
     {% if atividades %}
-        <ul class="lista">
+        <ul class="lista" id="lista-atividades">
             {% set voltar = 'painel' %}
             {% for a in atividades %}
                 {% include "_atividade_item.html" %}
             {% endfor %}
         </ul>
+        {# Aparece só quando o filtro escolhido não tem nenhuma atividade #}
+        <div class="vazio" id="filtro-vazio" hidden>
+            <p>Nenhuma atividade com esse status.</p>
+        </div>
     {% else %}
         <div class="vazio">
             <p>Nenhuma atividade por aqui ainda.<br>Abra uma matéria e cadastre suas provas e trabalhos nela.</p>
@@ -114,4 +119,37 @@
     {% endif %}
 </section>
 
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // ----- Filtros de atividades -----
+    // Não recarrega a página: só esconde/mostra as linhas que já estão na tela.
+    const botoesFiltro = document.querySelectorAll(".filtro");
+    const linhas = document.querySelectorAll("#lista-atividades .lista-item");
+    const avisoVazio = document.getElementById("filtro-vazio");
+
+    botoesFiltro.forEach((botao) => {
+        botao.addEventListener("click", () => {
+            const filtro = botao.dataset.filtro;  // lê o data-filtro do botão
+
+            // 1) Marca o botão clicado como ativo e desmarca os outros
+            botoesFiltro.forEach((b) => {
+                b.classList.toggle("ativo", b === botao);
+                b.setAttribute("aria-pressed", b === botao);
+            });
+
+            // 2) Mostra só as linhas com o status escolhido ("" = todas)
+            let visiveis = 0;
+            linhas.forEach((linha) => {
+                const mostrar = filtro === "" || linha.dataset.status === filtro;
+                linha.hidden = !mostrar;
+                if (mostrar) visiveis++;
+            });
+
+            // 3) Se nada sobrou, mostra o aviso
+            if (avisoVazio) avisoVazio.hidden = visiveis > 0;
+        });
+    });
+</script>
 {% endblock %}

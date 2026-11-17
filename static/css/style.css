@@ -32,6 +32,8 @@
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
+/* "hidden" (usado pelo JavaScript) sempre esconde, mesmo em elementos com display: flex */
+[hidden] { display: none !important; }
 
 body {
     font-family: "Inter", system-ui, sans-serif;
@@ -78,7 +80,7 @@ body::after {
 }
 /* Quem pede "menos movimento" no sistema não vê a animação */
 @media (prefers-reduced-motion: reduce) {
-    body::before, body::after, .resumo-card.urgente { animation: none; }
+    body::before, body::after, .resumo-card.urgente, .menu-lista { animation: none; }
     * { transition: none !important; }
 }
 
@@ -429,8 +431,9 @@ select.etiqueta { cursor: pointer; font-family: inherit; appearance: none; text-
 h2 .lucide, h3 .lucide { color: var(--acento); margin-right: 4px; }
 .icone-mini.lucide { width: .95em; height: .95em; }
 
-/* Ícone da conta no topo */
-.topo nav a.icone-conta {
+/* Ícone da conta no topo (bonequinho) */
+.menu-conta { position: relative; margin-left: 6px; }
+.icone-conta {
     width: 38px;
     height: 38px;
     padding: 0;
@@ -441,9 +444,61 @@ h2 .lucide, h3 .lucide { color: var(--acento); margin-right: 4px; }
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    cursor: pointer;
+    transition: background .2s;
 }
-.topo nav a.icone-conta:hover { background: rgba(255, 255, 255, .25); }
+.icone-conta:hover,
+.icone-conta[aria-expanded="true"] { background: rgba(255, 255, 255, .28); }
+.icone-conta:focus-visible { outline: 2px solid var(--acento); outline-offset: 3px; }
 .icone-conta .lucide { width: 18px; height: 18px; vertical-align: 0; }
+
+/* A lista que abre embaixo do bonequinho */
+.menu-lista {
+    position: absolute;
+    top: calc(100% + 12px);
+    right: 0;
+    min-width: 250px;
+    white-space: nowrap;
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    border-radius: var(--raio-pequeno);
+    /* Fundo sólido (com o mesmo brilho do vidro): fica por cima de tudo e precisa ser legível */
+    background: linear-gradient(180deg, rgba(255, 255, 255, .12), rgba(255, 255, 255, .04)), #231B6A;
+    border: 1px solid var(--vidro-borda);
+    box-shadow: inset 0 1px 0 var(--vidro-brilho), 0 16px 40px rgba(5, 5, 30, .5);
+    z-index: 20;
+    animation: aparecer .15s ease-out;
+}
+@keyframes aparecer {
+    from { opacity: 0; transform: translateY(-6px); }
+}
+.menu-nome {
+    padding: 8px 12px 10px;
+    margin-bottom: 4px;
+    font-weight: 700;
+    border-bottom: 1px solid rgba(255, 255, 255, .12);
+}
+.topo nav .menu-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    color: var(--texto);
+    font-weight: 500;
+}
+.topo nav a.menu-item:hover { background: rgba(255, 255, 255, .12); }
+.topo nav .menu-item.perigo { color: var(--perigo); }
+.menu-item.desativado { color: var(--texto-suave); cursor: default; }
+.menu-item small {
+    margin-left: auto;
+    font-size: .7rem;
+    padding: 2px 8px;
+    border-radius: 99px;
+    background: rgba(255, 255, 255, .12);
+}
 
 /* ================= Matérias ================= */
 .materias-grade {
