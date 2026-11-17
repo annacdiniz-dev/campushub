@@ -285,10 +285,10 @@ select option { background: #1E1A5C; color: #fff; }
 .frase { color: var(--texto-suave); margin-top: 4px; }
 .acoes { display: flex; gap: 10px; flex-wrap: wrap; }
 
-/* Cartões de resumo */
+/* Cartões de resumo: 4 lado a lado no computador (no tablet/celular vira 2x2, lá embaixo) */
 .resumo {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    grid-template-columns: repeat(4, 1fr);
     gap: 16px;
     margin-bottom: 24px;
 }
@@ -320,13 +320,34 @@ select option { background: #1E1A5C; color: #fff; }
     50% { box-shadow: inset 0 1px 0 rgba(255, 220, 230, .6), 0 10px 50px rgba(235, 55, 95, .65); }
 }
 
-/* Blocos (as caixas de vidro grandes) */
-.painel-grade {
+/* Corpo do painel: atividades (larga) + prazos (lateral) */
+.painel-corpo {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    grid-template-columns: minmax(0, 2fr) minmax(300px, 1fr);
     gap: 20px;
-    margin-bottom: 20px;
+    align-items: start;   /* cada coluna com a própria altura */
 }
+/* No computador, os prazos "grudam" no topo enquanto você rola a lista de atividades */
+.bloco-prazos { position: sticky; top: 100px; }
+
+/* Quanto falta para o prazo */
+.faltam {
+    font-size: .78rem;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 99px;
+    white-space: nowrap;
+    color: var(--acento);
+    background: rgba(255, 255, 255, .08);
+    border: 1px solid rgba(255, 255, 255, .14);
+}
+.faltam.perto {
+    color: #FFE3EA;
+    background: rgba(235, 55, 95, .40);
+    border-color: rgba(255, 160, 185, .55);
+}
+
+/* Blocos (as caixas de vidro grandes) */
 .bloco {
     border-radius: var(--raio);
     padding: 22px;
@@ -522,7 +543,8 @@ h2 .lucide, h3 .lucide { color: var(--acento); margin-right: 4px; }
 .materia-link { display: flex; flex-direction: column; gap: 8px; }
 .materia-link:hover h3 { color: var(--acento); }
 .materia-topo { display: flex; justify-content: space-between; align-items: start; gap: 8px; }
-.materia-topo h3 { font-size: 1.15rem; }
+.materia-topo h3 { font-size: 1.15rem; display: flex; align-items: center; gap: 10px; }
+.bolinha-grande { width: 18px; height: 18px; box-shadow: 0 0 0 4px rgba(255, 255, 255, .15), 0 0 18px var(--cor); }
 .materia-card p { color: var(--texto-suave); font-size: .92rem; }
 .materia-card p .lucide { margin-right: 4px; }
 .materia-acoes {
@@ -538,7 +560,19 @@ h2 .lucide, h3 .lucide { color: var(--acento); margin-right: 4px; }
 .voltar { margin-bottom: 12px; }
 .voltar a { display: inline-flex; align-items: center; gap: 4px; color: var(--texto-suave); font-weight: 500; }
 .voltar a:hover { color: #fff; }
-.materia-cabecalho { border-left: 5px solid var(--cor); padding-left: 16px; }
+/* Cabeçalho da página da matéria: vidro com o brilho da cor da matéria, igual ao card */
+.materia-cabecalho {
+    padding: 24px 26px;
+    border-radius: var(--raio);
+    background:
+        radial-gradient(circle at 0% 0%, color-mix(in srgb, var(--cor) 50%, transparent), transparent 70%),
+        var(--vidro);
+    -webkit-backdrop-filter: var(--desfoque);
+    backdrop-filter: var(--desfoque);
+    border: 1px solid var(--vidro-borda);
+    box-shadow: inset 0 1px 0 var(--vidro-brilho), var(--sombra);
+}
+.materia-cabecalho h1 { display: flex; align-items: center; gap: 14px; }
 .materia-fixa {
     display: flex; align-items: center; gap: 8px;
     margin-bottom: 16px;
@@ -565,10 +599,42 @@ h2 .lucide, h3 .lucide { color: var(--acento); margin-right: 4px; }
 .cor-opcao input:checked + span { border-color: #fff; box-shadow: 0 0 14px rgba(255, 255, 255, .5); }
 .cor-opcao input:focus-visible + span { outline: 2px solid var(--acento); outline-offset: 3px; }
 
+/* ================= Tablet (e computador com janela estreita) ================= */
+@media (max-width: 960px) {
+    /* Uma coluna só; os prazos sobem para antes das atividades (order: -1) */
+    /* minmax(0, 1fr) e não só 1fr: "1fr" nunca encolhe menos que o conteúdo mais largo
+       (a fileira de filtros), e isso estourava a tela do celular */
+    .painel-corpo { grid-template-columns: minmax(0, 1fr); }
+    .bloco-prazos { position: static; order: -1; }
+    .resumo { grid-template-columns: repeat(2, 1fr); }
+}
+
 /* ================= Celular ================= */
 @media (max-width: 600px) {
-    .topo { border-radius: var(--raio); flex-direction: column; }
-    .conteudo { padding: 32px 16px; }
+    .topo { top: 8px; margin-top: 8px; padding: 8px 10px 8px 16px; }
+    .logo { font-size: 1.15rem; }
+    .topo nav { gap: 2px; flex-wrap: nowrap; }
+    .topo nav a { padding: 7px 10px; font-size: .92rem; }
+    .conteudo { padding: 28px 14px; }
+    .conteudo:has(.painel-topo) { padding-top: 24px; }
+
+    .resumo { gap: 10px; margin-bottom: 16px; }
+    .resumo-card { padding: 16px; border-radius: var(--raio-pequeno); }
+    .resumo-numero { font-size: 1.8rem; }
+    .resumo-rotulo { font-size: .85rem; }
+
+    .bloco { padding: 16px; }
+    .bloco-topo { flex-direction: column; align-items: flex-start; }
+    /* Filtros numa linha que rola para o lado, em vez de quebrar em várias */
+    .filtros { flex-wrap: nowrap; overflow-x: auto; width: 100%; padding-bottom: 4px; scrollbar-width: none; }
+    .filtro { flex-shrink: 0; }
+
+    .lista-item { padding: 10px 12px; gap: 10px; }
+    .etiqueta { font-size: .74rem; padding: 4px 9px; }
+
+    .caixa-form { padding: 24px 20px; }
     .duas-colunas { grid-template-columns: 1fr; gap: 0; }
-    .painel-grade { grid-template-columns: 1fr; }
+    .materia-cabecalho { padding: 18px; }
+    .acoes { width: 100%; }
+    .acoes .botao { flex: 1; }
 }

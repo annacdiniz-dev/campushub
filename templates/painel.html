@@ -32,23 +32,60 @@
     </div>
 </section>
 
-{# ---------- Duas colunas: prazos e matérias ---------- #}
-<section class="painel-grade">
+{# ---------- Corpo: atividades (coluna larga) + próximos prazos (coluna lateral) ----------
+     No computador ficam lado a lado; no tablet/celular, empilhados com os prazos primeiro.
+     Quem decide a ordem e as colunas é o CSS (.painel-corpo). #}
+<div class="painel-corpo">
 
-    <div class="bloco">
+    <section class="bloco bloco-atividades">
+        <div class="bloco-topo">
+            <h2><i data-lucide="clipboard-list"></i> Atividades</h2>
+            {# data-filtro: qual status cada botão mostra ("" = todos) #}
+            <div class="filtros" role="group" aria-label="Filtrar atividades">
+                <button type="button" class="filtro ativo" data-filtro="" aria-pressed="true">Todas</button>
+                <button type="button" class="filtro" data-filtro="Pendente" aria-pressed="false">Pendentes</button>
+                <button type="button" class="filtro" data-filtro="Em andamento" aria-pressed="false">Em andamento</button>
+                <button type="button" class="filtro" data-filtro="Concluído" aria-pressed="false">Concluídas</button>
+            </div>
+        </div>
+
+        {% if atividades %}
+            <ul class="lista" id="lista-atividades">
+                {% set voltar = 'painel' %}
+                {% for a in atividades %}
+                    {% include "_atividade_item.html" %}
+                {% endfor %}
+            </ul>
+            {# Aparece só quando o filtro escolhido não tem nenhuma atividade #}
+            <div class="vazio" id="filtro-vazio" hidden>
+                <p>Nenhuma atividade com esse status.</p>
+            </div>
+        {% else %}
+            <div class="vazio">
+                <p>Nenhuma atividade por aqui ainda.<br>Abra uma matéria e cadastre suas provas e trabalhos nela.</p>
+                <a href="{{ url_for('materias.listar') }}" class="botao botao-pequeno">Ir para matérias</a>
+            </div>
+        {% endif %}
+    </section>
+
+    <aside class="bloco bloco-prazos">
         <div class="bloco-topo">
             <h2><i data-lucide="calendar"></i> Próximos prazos</h2>
         </div>
         {% if proximos %}
             <ul class="lista">
                 {% for a in proximos %}
+                {% set dias = (a.data_entrega - hoje).days %}
                 <li class="lista-item">
                     <span class="bolinha" style="background: {{ a.materia.cor }}"></span>
                     <div class="lista-texto">
-                        <strong>{{ a.titulo }}</strong>
-                        <small>{{ a.materia.nome }} · {{ a.tipo }}</small>
+                        <a href="{{ url_for('atividades.editar', atividade_id=a.id) }}" class="titulo-link"><strong>{{ a.titulo }}</strong></a>
+                        <small>{{ a.materia.nome }} · {{ a.tipo }} · {{ a.data_entrega.strftime('%d/%m') }}</small>
                     </div>
-                    <span class="data">{{ a.data_entrega.strftime('%d/%m') }}</span>
+                    {# Quanto falta: fica avermelhado quando é em até 3 dias #}
+                    <span class="faltam {% if dias <= 3 %}perto{% endif %}">
+                        {% if dias == 0 %}hoje{% elif dias == 1 %}amanhã{% else %}em {{ dias }} dias{% endif %}
+                    </span>
                 </li>
                 {% endfor %}
             </ul>
@@ -57,67 +94,9 @@
                 <p>Nenhum prazo chegando. Aproveite!</p>
             </div>
         {% endif %}
-    </div>
+    </aside>
 
-    <div class="bloco">
-        <div class="bloco-topo">
-            <h2><i data-lucide="book-open"></i> Minhas matérias</h2>
-            <a href="{{ url_for('materias.listar') }}" class="link-botao">Ver todas</a>
-        </div>
-        {% if materias %}
-            <ul class="lista">
-                {% for m in materias %}
-                <li class="lista-item">
-                    <span class="bolinha" style="background: {{ m.cor }}"></span>
-                    <div class="lista-texto">
-                        <a href="{{ url_for('materias.ver', materia_id=m.id) }}" class="titulo-link"><strong>{{ m.nome }}</strong></a>
-                        <small>{{ m.professor or 'Sem professor' }}</small>
-                    </div>
-                    <span class="contador">{{ m.atividades|length }}</span>
-                </li>
-                {% endfor %}
-            </ul>
-        {% else %}
-            <div class="vazio">
-                <p>Você ainda não cadastrou matérias.</p>
-                <a href="{{ url_for('materias.nova') }}" class="botao botao-pequeno">+ Adicionar a primeira</a>
-            </div>
-        {% endif %}
-    </div>
-
-</section>
-
-{# ---------- Lista de atividades com filtros ---------- #}
-<section class="bloco">
-    <div class="bloco-topo">
-        <h2><i data-lucide="clipboard-list"></i> Atividades</h2>
-        {# data-filtro: qual status cada botão mostra ("" = todos) #}
-        <div class="filtros" role="group" aria-label="Filtrar atividades">
-            <button type="button" class="filtro ativo" data-filtro="" aria-pressed="true">Todas</button>
-            <button type="button" class="filtro" data-filtro="Pendente" aria-pressed="false">Pendentes</button>
-            <button type="button" class="filtro" data-filtro="Em andamento" aria-pressed="false">Em andamento</button>
-            <button type="button" class="filtro" data-filtro="Concluído" aria-pressed="false">Concluídas</button>
-        </div>
-    </div>
-
-    {% if atividades %}
-        <ul class="lista" id="lista-atividades">
-            {% set voltar = 'painel' %}
-            {% for a in atividades %}
-                {% include "_atividade_item.html" %}
-            {% endfor %}
-        </ul>
-        {# Aparece só quando o filtro escolhido não tem nenhuma atividade #}
-        <div class="vazio" id="filtro-vazio" hidden>
-            <p>Nenhuma atividade com esse status.</p>
-        </div>
-    {% else %}
-        <div class="vazio">
-            <p>Nenhuma atividade por aqui ainda.<br>Abra uma matéria e cadastre suas provas e trabalhos nela.</p>
-            <a href="{{ url_for('materias.listar') }}" class="botao botao-pequeno">Ir para matérias</a>
-        </div>
-    {% endif %}
-</section>
+</div>
 
 {% endblock %}
 

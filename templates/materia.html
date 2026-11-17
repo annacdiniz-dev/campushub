@@ -6,7 +6,7 @@
 
 <section class="painel-topo materia-cabecalho" style="--cor: {{ materia.cor }}">
     <div>
-        <h1>{{ materia.nome }}</h1>
+        <h1><span class="bolinha bolinha-grande" style="background: {{ materia.cor }}"></span> {{ materia.nome }}</h1>
         <p class="frase">
             {{ materia.professor or 'Sem professor' }}{% if materia.semestre %} · {{ materia.semestre }}{% endif %}
             · {{ atividades|length }} atividade{{ 's' if atividades|length != 1 }}

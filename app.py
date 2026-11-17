@@ -83,7 +83,7 @@ def painel():
         resumo=resumo,
         proximos=proximos,
         atividades=atividades,
-        materias=current_user.materias,
+        hoje=hoje,              # para calcular "faltam X dias" nos próximos prazos
         status_opcoes=STATUS,
     )
 

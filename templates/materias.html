@@ -19,7 +19,7 @@
         {# A parte de cima do card é um link: clicou, abre a página da matéria #}
         <a href="{{ url_for('materias.ver', materia_id=m.id) }}" class="materia-link">
             <div class="materia-topo">
-                <h3>{{ m.nome }}</h3>
+                <h3><span class="bolinha" style="background: {{ m.cor }}"></span> {{ m.nome }}</h3>
                 <span class="contador" title="Atividades">{{ m.atividades|length }}</span>
             </div>
             <p><i data-lucide="user"></i> {{ m.professor or 'Sem professor' }}</p>
