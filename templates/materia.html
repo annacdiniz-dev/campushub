@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block titulo %}{{ materia.nome }} · CampusHub{% endblock %}
+
+{% block conteudo %}
+<p class="voltar"><a href="{{ url_for('materias.listar') }}"><i data-lucide="arrow-left"></i> Matérias</a></p>
+
+<section class="painel-topo materia-cabecalho" style="--cor: {{ materia.cor }}">
+    <div>
+        <h1>{{ materia.nome }}</h1>
+        <p class="frase">
+            {{ materia.professor or 'Sem professor' }}{% if materia.semestre %} · {{ materia.semestre }}{% endif %}
+            · {{ atividades|length }} atividade{{ 's' if atividades|length != 1 }}
+        </p>
+    </div>
+    <div class="acoes">
+        <a href="{{ url_for('materias.editar', materia_id=materia.id) }}" class="botao botao-contorno">Editar matéria</a>
+        <a href="{{ url_for('atividades.nova', materia_id=materia.id) }}" class="botao">+ Nova atividade</a>
+    </div>
+</section>
+
+<section class="bloco">
+    {% if atividades %}
+        <ul class="lista">
+            {% set voltar = 'materia' %}
+            {% for a in atividades %}
+                {% include "_atividade_item.html" %}
+            {% endfor %}
+        </ul>
+    {% else %}
+        <div class="vazio">
+            <p>Nenhuma atividade nesta matéria ainda.</p>
+            <a href="{{ url_for('atividades.nova', materia_id=materia.id) }}" class="botao botao-pequeno">+ Adicionar a primeira</a>
+        </div>
+    {% endif %}
+</section>
+{% endblock %}

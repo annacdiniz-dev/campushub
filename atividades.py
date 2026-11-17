@@ -4,6 +4,7 @@ from datetime import date
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
+from materias import buscar_materia
 from models import PRIORIDADES, STATUS, TIPOS, Atividade, Materia, db
 
 atividades = Blueprint("atividades", __name__, url_prefix="/atividades")
@@ -22,12 +23,23 @@ def buscar_atividade(atividade_id):
     )
 
 
-def materias_do_usuario():
-    return Materia.query.filter_by(usuario_id=current_user.id).order_by(Materia.nome).all()
+def destino(materia_id):
+    """Para onde voltar depois de salvar: página da matéria ou painel.
+
+    Quem chama avisa com "voltar=materia" (na URL ou num campo escondido do formulário).
+    request.values junta os dois lugares: request.args (URL) + request.form (formulário).
+    """
+    if request.values.get("voltar") == "materia":
+        return redirect(url_for("materias.ver", materia_id=materia_id))
+    return redirect(url_for("painel"))
 
 
-def ler_formulario():
-    """Pega os dados do formulário e devolve (dados, erro)."""
+def ler_formulario(materia_id=None):
+    """Pega os dados do formulário e devolve (dados, erro).
+
+    materia_id: se vier preenchido, a matéria já está decidida (atividade nova
+    criada dentro de uma matéria). Se não, ela vem do formulário (edição).
+    """
     form = request.form
     dados = {
         "titulo": form.get("titulo", "").strip(),
@@ -37,7 +49,7 @@ def ler_formulario():
         "status": form.get("status", "Pendente"),
         # Checkbox: se marcado, vem no formulário; se não, nem aparece
         "em_grupo": "em_grupo" in form,
-        "materia_id": form.get("materia_id", type=int),
+        "materia_id": materia_id or form.get("materia_id", type=int),
         "data_entrega": None,
     }
 
@@ -49,7 +61,7 @@ def ler_formulario():
         except ValueError:
             erro = "Data de entrega inválida."
 
-    # Segurança: a matéria escolhida PRECISA ser do usuário logado.
+    # Segurança: a matéria PRECISA ser do usuário logado.
     # Sem isso, alguém poderia editar o HTML e mandar o id da matéria de outra pessoa.
     materia = Materia.query.filter_by(id=dados["materia_id"], usuario_id=current_user.id).first()
 
@@ -66,42 +78,42 @@ def ler_formulario():
     return dados, erro
 
 
-def mostrar_formulario(atividade, editando, atividade_id=None):
+def mostrar_formulario(atividade, editando, materia=None, atividade_id=None):
     """Renderiza o formulário (usado no GET e quando dá erro no POST)."""
     return render_template(
         "atividade_form.html",
         atividade=atividade,
         editando=editando,
+        materia=materia,                  # só na criação: a matéria já escolhida
         atividade_id=atividade_id,
-        materias=materias_do_usuario(),
+        voltar=request.values.get("voltar", "painel"),
+        materias=Materia.query.filter_by(usuario_id=current_user.id).order_by(Materia.nome).all(),
         tipos=TIPOS,
         prioridades=PRIORIDADES,
         status_opcoes=STATUS,
     )
 
 
-@atividades.route("/nova", methods=["GET", "POST"])
+@atividades.route("/nova/<int:materia_id>", methods=["GET", "POST"])
 @login_required
-def nova():
-    # Sem matéria não dá para criar atividade: manda criar uma primeiro
-    if not materias_do_usuario():
-        flash("Cadastre uma matéria antes de criar atividades.", "erro")
-        return redirect(url_for("materias.nova"))
+def nova(materia_id):
+    # A matéria vem pela URL (/atividades/nova/3). buscar_materia garante que é sua.
+    materia = buscar_materia(materia_id)
 
     if request.method == "POST":
-        dados, erro = ler_formulario()
+        dados, erro = ler_formulario(materia_id=materia.id)
         if erro:
             flash(erro, "erro")
-            return mostrar_formulario(dados, editando=False)
+            return mostrar_formulario(dados, editando=False, materia=materia)
 
         db.session.add(Atividade(**dados))
         db.session.commit()
         flash(f"Atividade \"{dados['titulo']}\" criada!", "sucesso")
-        return redirect(url_for("painel"))
+        return redirect(url_for("materias.ver", materia_id=materia.id))
 
     # Valores que já vêm preenchidos num formulário novo
     padrao = {"tipo": "Trabalho", "prioridade": "Média", "status": "Pendente"}
-    return mostrar_formulario(padrao, editando=False)
+    return mostrar_formulario(padrao, editando=False, materia=materia)
 
 
 @atividades.route("/<int:atividade_id>/editar", methods=["GET", "POST"])
@@ -119,7 +131,7 @@ def editar(atividade_id):
             setattr(atividade, campo, valor)
         db.session.commit()
         flash("Atividade atualizada!", "sucesso")
-        return redirect(url_for("painel"))
+        return destino(atividade.materia_id)
 
     return mostrar_formulario(atividade, editando=True, atividade_id=atividade.id)
 
@@ -127,21 +139,21 @@ def editar(atividade_id):
 @atividades.route("/<int:atividade_id>/status", methods=["POST"])
 @login_required
 def mudar_status(atividade_id):
-    """Troca só o status, direto do painel, sem abrir o formulário inteiro."""
+    """Troca só o status, direto da lista, sem abrir o formulário inteiro."""
     atividade = buscar_atividade(atividade_id)
     novo = request.form.get("status")
     if novo in STATUS:
         atividade.status = novo
         db.session.commit()
-    return redirect(url_for("painel"))
+    return destino(atividade.materia_id)
 
 
 @atividades.route("/<int:atividade_id>/excluir", methods=["POST"])
 @login_required
 def excluir(atividade_id):
     atividade = buscar_atividade(atividade_id)
-    titulo = atividade.titulo
+    titulo, materia_id = atividade.titulo, atividade.materia_id
     db.session.delete(atividade)  # os itens do checklist vão junto (cascade)
     db.session.commit()
     flash(f"Atividade \"{titulo}\" excluída.", "sucesso")
-    return redirect(url_for("painel"))
+    return destino(materia_id)

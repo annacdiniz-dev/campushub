@@ -11,12 +11,18 @@
         <input type="text" id="titulo" name="titulo" value="{{ atividade.titulo or '' }}"
                placeholder="Ex.: P1 de Cálculo" maxlength="100" required autofocus>
 
-        <label for="materia_id">Matéria *</label>
-        <select id="materia_id" name="materia_id" required>
-            {% for m in materias %}
-            <option value="{{ m.id }}" {% if atividade.materia_id == m.id %}selected{% endif %}>{{ m.nome }}</option>
-            {% endfor %}
-        </select>
+        {% if editando %}
+            {# Na edição dá para mudar de matéria (caso tenha criado na errada) #}
+            <label for="materia_id">Matéria *</label>
+            <select id="materia_id" name="materia_id" required>
+                {% for m in materias %}
+                <option value="{{ m.id }}" {% if atividade.materia_id == m.id %}selected{% endif %}>{{ m.nome }}</option>
+                {% endfor %}
+            </select>
+        {% else %}
+            {# Na criação a matéria já vem da página de onde a pessoa clicou #}
+            <p class="materia-fixa"><span class="bolinha" style="background: {{ materia.cor }}"></span> {{ materia.nome }}</p>
+        {% endif %}
 
         <div class="duas-colunas">
             <div>
@@ -67,12 +73,20 @@
     </form>
 
     {% if editando %}
-    <form method="POST" action="{{ url_for('atividades.excluir', atividade_id=atividade_id) }}" class="form-excluir"
+    <form method="POST" action="{{ url_for('atividades.excluir', atividade_id=atividade_id, voltar=voltar) }}" class="form-excluir"
           onsubmit="return confirm('Excluir esta atividade?');">
         <button type="submit" class="link-botao perigo"><i data-lucide="trash-2"></i> Excluir atividade</button>
     </form>
     {% endif %}
 
-    <p class="troca"><a href="{{ url_for('painel') }}">Cancelar</a></p>
+    {# Cancelar volta para a página da matéria ou para o painel, de onde a pessoa veio #}
+    {% if materia %}
+        {% set cancelar = url_for('materias.ver', materia_id=materia.id) %}
+    {% elif voltar == 'materia' %}
+        {% set cancelar = url_for('materias.ver', materia_id=atividade.materia_id) %}
+    {% else %}
+        {% set cancelar = url_for('painel') %}
+    {% endif %}
+    <p class="troca"><a href="{{ cancelar }}">Cancelar</a></p>
 </div>
 {% endblock %}

@@ -9,10 +9,6 @@
         <h1>Olá, {{ current_user.nome.split()[0] }}!</h1>
         <p class="frase">Seu eu do futuro agradece por estar aqui!</p>
     </div>
-    <div class="acoes">
-        <a href="{{ url_for('materias.nova') }}" class="botao botao-contorno">+ Nova matéria</a>
-        <a href="{{ url_for('atividades.nova') }}" class="botao">+ Nova atividade</a>
-    </div>
 </section>
 
 {# ---------- Cartões de resumo ---------- #}
@@ -73,7 +69,7 @@
                 <li class="lista-item">
                     <span class="bolinha" style="background: {{ m.cor }}"></span>
                     <div class="lista-texto">
-                        <strong>{{ m.nome }}</strong>
+                        <a href="{{ url_for('materias.ver', materia_id=m.id) }}" class="titulo-link"><strong>{{ m.nome }}</strong></a>
                         <small>{{ m.professor or 'Sem professor' }}</small>
                     </div>
                     <span class="contador">{{ m.atividades|length }}</span>
@@ -104,29 +100,15 @@
 
     {% if atividades %}
         <ul class="lista">
+            {% set voltar = 'painel' %}
             {% for a in atividades %}
-            <li class="lista-item">
-                <span class="bolinha" style="background: {{ a.materia.cor }}"></span>
-                <div class="lista-texto">
-                    <a href="{{ url_for('atividades.editar', atividade_id=a.id) }}" class="titulo-link"><strong>{{ a.titulo }}</strong></a>
-                    <small>{{ a.materia.nome }} · {{ a.tipo }}{% if a.data_entrega %} · {{ a.data_entrega.strftime('%d/%m') }}{% endif %}{% if a.em_grupo %} · <i data-lucide="users" class="icone-mini"></i> Grupo{% endif %}</small>
-                    <div class="barra"><div class="barra-cheia" style="width: {{ a.progresso }}%"></div></div>
-                </div>
-                {# Trocar o status: ao escolher outra opção, o formulário se envia sozinho #}
-                <form method="POST" action="{{ url_for('atividades.mudar_status', atividade_id=a.id) }}">
-                    <select name="status" class="etiqueta etiqueta-{{ a.status|lower|replace(' ', '-') }}"
-                            onchange="this.form.submit()" aria-label="Status de {{ a.titulo }}">
-                        {% for s in status_opcoes %}
-                        <option {% if a.status == s %}selected{% endif %}>{{ s }}</option>
-                        {% endfor %}
-                    </select>
-                </form>
-            </li>
+                {% include "_atividade_item.html" %}
             {% endfor %}
         </ul>
     {% else %}
         <div class="vazio">
-            <p>Nenhuma atividade por aqui ainda.<br>Cadastre uma matéria e depois suas provas e trabalhos.</p>
+            <p>Nenhuma atividade por aqui ainda.<br>Abra uma matéria e cadastre suas provas e trabalhos nela.</p>
+            <a href="{{ url_for('materias.listar') }}" class="botao botao-pequeno">Ir para matérias</a>
         </div>
     {% endif %}
 </section>

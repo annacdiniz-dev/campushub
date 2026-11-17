@@ -1,10 +1,11 @@
 """Tudo sobre matérias: listar, criar, editar e excluir."""
 import re
+from datetime import date
 
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
-from models import Materia, db
+from models import STATUS, Materia, db
 
 materias = Blueprint("materias", __name__, url_prefix="/materias")
 
@@ -37,6 +38,21 @@ def ler_formulario():
 def listar():
     lista = Materia.query.filter_by(usuario_id=current_user.id).order_by(Materia.nome).all()
     return render_template("materias.html", materias=lista)
+
+
+@materias.route("/<int:materia_id>")
+@login_required
+def ver(materia_id):
+    """Página de uma matéria: mostra as atividades dela."""
+    materia = buscar_materia(materia_id)
+
+    # Ordem: não concluídas primeiro; dentro disso, a data mais próxima primeiro
+    # (atividades sem data vão para o fim). sorted() compara as tuplas item por item.
+    lista = sorted(
+        materia.atividades,
+        key=lambda a: (a.status == "Concluído", a.data_entrega is None, a.data_entrega or date.max),
+    )
+    return render_template("materia.html", materia=materia, atividades=lista, status_opcoes=STATUS)
 
 
 @materias.route("/nova", methods=["GET", "POST"])

@@ -131,6 +131,13 @@ button { font: inherit; }
 /* Atividades no painel */
 .titulo-link { color: inherit; text-decoration: none; }
 .titulo-link:hover { color: var(--roxo); }
+.materia-link { display: flex; flex-direction: column; gap: 8px; color: inherit; text-decoration: none; }
+.materia-link:hover h3 { color: var(--roxo); }
+.voltar { margin-bottom: 12px; }
+.voltar a { display: inline-flex; align-items: center; gap: 4px; color: var(--texto-suave); font-weight: 500; text-decoration: none; }
+.voltar a:hover { color: var(--roxo); }
+.materia-cabecalho { border-left: 6px solid var(--cor); padding-left: 16px; }
+.materia-fixa { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; font-weight: 600; }
 select.etiqueta { border: none; cursor: pointer; font-family: inherit; appearance: none; text-align: center; }
 .check { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; font-weight: 400 !important; }
 .troca { text-align: center; margin-top: 20px; color: var(--texto-suave); }
