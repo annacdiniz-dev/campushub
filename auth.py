@@ -2,7 +2,7 @@
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required, login_user, logout_user
 
-from models import Usuario, db
+from models import Usuario, db, gerar_codigo_unico
 
 # Blueprint = um "pedaço" do site agrupado num arquivo próprio
 auth = Blueprint("auth", __name__)
@@ -35,7 +35,7 @@ def cadastro():
             flash(erro, "erro")
             return render_template("cadastro.html", nome=nome, email=email)
 
-        usuario = Usuario(nome=nome, email=email)
+        usuario = Usuario(nome=nome, email=email, codigo=gerar_codigo_unico())
         usuario.definir_senha(senha)
         db.session.add(usuario)
         db.session.commit()

@@ -6,6 +6,7 @@ from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
 from models import STATUS, Materia, db
+from uploads import apagar_arquivos_da_atividade
 
 materias = Blueprint("materias", __name__, url_prefix="/materias")
 
@@ -97,6 +98,8 @@ def editar(materia_id):
 def excluir(materia_id):
     materia = buscar_materia(materia_id)
     nome = materia.nome
+    for atividade in materia.atividades:
+        apagar_arquivos_da_atividade(atividade.id)  # arquivos anexados, no disco
     db.session.delete(materia)  # as atividades dela vão junto (cascade)
     db.session.commit()
     flash(f"Matéria \"{nome}\" excluída.", "sucesso")

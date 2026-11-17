@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% block titulo %}Colegas · CampusHub{% endblock %}
+
+{# Avatar redondo: foto, ou a inicial do nome #}
+{% macro avatar(usuario, classe='avatar-medio') %}
+<span class="avatar {{ classe }}">
+    {% if usuario.foto %}<img src="{{ url_for('static', filename='uploads/fotos/' ~ usuario.foto) }}" alt="">{% else %}{{ usuario.nome[0]|upper }}{% endif %}
+</span>
+{% endmacro %}
+
+{% block conteudo %}
+<div class="colegas">
+    <h1>Colegas</h1>
+    <p class="frase">Adicione seus amigos pelo ID para colocá-los nos trabalhos em grupo.</p>
+
+    {# ---------- Você + seu ID ---------- #}
+    <section class="bloco meu-id">
+        {{ avatar(current_user, 'avatar-grande-medio') }}
+        <div class="meu-id-texto">
+            <strong>{{ current_user.nome }}</strong>
+            <small>Passe seu ID para os amigos te adicionarem</small>
+        </div>
+        <button type="button" class="codigo" id="botao-copiar" data-codigo="{{ current_user.codigo }}" title="Copiar ID">
+            <span>{{ current_user.codigo }}</span> <i data-lucide="copy"></i>
+        </button>
+    </section>
+
+    {# ---------- Busca por ID ---------- #}
+    <section class="bloco">
+        <h2><i data-lucide="search"></i> Adicionar colega</h2>
+        {# GET: a busca vai para a URL (?busca=K7P2). Buscar não muda nada, só mostra. #}
+        <form method="GET" action="{{ url_for('colegas.listar') }}" class="busca">
+            <input type="text" name="busca" value="{{ busca }}" placeholder="Digite o ID do seu amigo (ex.: K7P2)"
+                   maxlength="5" autocomplete="off" aria-label="ID do colega" autofocus>
+            <button type="submit" class="botao">Buscar</button>
+        </form>
+
+        {% if busca %}
+            <div class="resultado">
+            {% if not encontrado %}
+                <p class="vazio-pequeno">Nenhum usuário com o ID <strong>{{ busca }}</strong>. Confira se digitou certinho.</p>
+            {% else %}
+                <div class="lista-item">
+                    {{ avatar(encontrado) }}
+                    <div class="lista-texto">
+                        <strong>{{ encontrado.nome }}</strong>
+                        <small>ID {{ encontrado.codigo }}</small>
+                    </div>
+                    {% if encontrado.id == current_user.id %}
+                        <span class="etiqueta etiqueta-neutra">É você</span>
+                    {% elif current_user.eh_colega(encontrado.id) %}
+                        <span class="etiqueta etiqueta-concluído">Já é seu colega</span>
+                    {% else %}
+                        {# POST: adicionar MUDA o banco, então é formulário POST (nunca um link) #}
+                        <form method="POST" action="{{ url_for('colegas.adicionar') }}">
+                            <input type="hidden" name="codigo" value="{{ encontrado.codigo }}">
+                            <button type="submit" class="botao botao-pequeno"><i data-lucide="user-plus"></i> Adicionar</button>
+                        </form>
+                    {% endif %}
+                </div>
+            {% endif %}
+            </div>
+        {% endif %}
+    </section>
+
+    {# ---------- Lista de colegas ---------- #}
+    <section class="bloco">
+        <div class="bloco-topo">
+            <h2><i data-lucide="users"></i> Meus colegas</h2>
+            <span class="contador">{{ meus_colegas|length }}</span>
+        </div>
+        {% if meus_colegas %}
+        <ul class="lista">
+            {% for colega in meus_colegas %}
+            <li class="lista-item">
+                {{ avatar(colega) }}
+                <div class="lista-texto">
+                    <strong>{{ colega.nome }}</strong>
+                    <small>ID {{ colega.codigo }}</small>
+                </div>
+                <form method="POST" action="{{ url_for('colegas.remover', colega_id=colega.id) }}"
+                      data-nome="{{ colega.nome }}" onsubmit="return confirm('Remover ' + this.dataset.nome + ' dos seus colegas?');">
+                    <button type="submit" class="botao-icone perigo" aria-label="Remover {{ colega.nome }}"><i data-lucide="x"></i></button>
+                </form>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p class="vazio-pequeno">Você ainda não adicionou ninguém. Peça o ID de um amigo e busque acima.</p>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Copiar o ID com um clique
+    const botaoCopiar = document.getElementById("botao-copiar");
+    botaoCopiar.addEventListener("click", async () => {
+        try {
+            await navigator.clipboard.writeText(botaoCopiar.dataset.codigo);
+            botaoCopiar.classList.add("copiado");
+            botaoCopiar.querySelector("span").textContent = "Copiado!";
+            setTimeout(() => {
+                botaoCopiar.classList.remove("copiado");
+                botaoCopiar.querySelector("span").textContent = botaoCopiar.dataset.codigo;
+            }, 1500);
+        } catch {
+            // Alguns navegadores bloqueiam copiar; aí a pessoa copia na mão
+        }
+    });
+</script>
+{% endblock %}

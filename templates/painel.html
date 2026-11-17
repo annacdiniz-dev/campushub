@@ -48,7 +48,7 @@
                 <li class="lista-item prazo-item">
                     {# Bolinha com a cor da matéria; o nome dela aparece ao passar o mouse #}
                     <span class="bolinha" style="background: {{ a.materia.cor }}" title="{{ a.materia.nome }}"></span>
-                    <a href="{{ url_for('atividades.editar', atividade_id=a.id) }}" class="titulo-link prazo-titulo"><strong>{{ a.titulo }}</strong></a>
+                    <a href="{{ url_for('atividades.ver', atividade_id=a.id) }}" class="titulo-link prazo-titulo"><strong>{{ a.titulo }}</strong></a>
                     {# Balão com a data de entrega. Cor: vermelho se vence em até 7 dias
                        (igual ao cartão "Vencem em 7 dias"); senão, a cor do status #}
                     <span class="etiqueta {% if dias <= 7 %}etiqueta-urgente{% else %}etiqueta-{{ a.status|lower|replace(' ', '-') }}{% endif %}"

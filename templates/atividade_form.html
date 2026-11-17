@@ -82,6 +82,8 @@
     {# Cancelar volta para a página da matéria ou para o painel, de onde a pessoa veio #}
     {% if materia %}
         {% set cancelar = url_for('materias.ver', materia_id=materia.id) %}
+    {% elif voltar == 'atividade' %}
+        {% set cancelar = url_for('atividades.ver', atividade_id=atividade_id) %}
     {% elif voltar == 'materia' %}
         {% set cancelar = url_for('materias.ver', materia_id=atividade.materia_id) %}
     {% else %}

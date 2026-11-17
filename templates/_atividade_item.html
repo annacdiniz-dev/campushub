@@ -4,7 +4,7 @@
 <li class="lista-item" data-status="{{ a.status }}">
     <span class="bolinha" style="background: {{ a.materia.cor }}"></span>
     <div class="lista-texto">
-        <a href="{{ url_for('atividades.editar', atividade_id=a.id, voltar=voltar) }}" class="titulo-link"><strong>{{ a.titulo }}</strong></a>
+        <a href="{{ url_for('atividades.ver', atividade_id=a.id) }}" class="titulo-link"><strong>{{ a.titulo }}</strong></a>
         <small>
             {%- if voltar != 'materia' %}{{ a.materia.nome }} · {% endif -%}
             {{ a.tipo }}{% if a.data_entrega %} · {{ a.data_entrega.strftime('%d/%m') }}{% endif %}{% if a.em_grupo %} · <i data-lucide="users" class="icone-mini"></i> Grupo{% endif %}

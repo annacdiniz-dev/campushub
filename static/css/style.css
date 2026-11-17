@@ -136,6 +136,15 @@ h1, h2, h3 { font-family: "Plus Jakarta Sans", "Inter", sans-serif; letter-spaci
     transition: background .2s, color .2s;
 }
 .topo nav a:hover { color: var(--texto); background: var(--vidro-forte); }
+.topo nav a.nav-link { display: inline-flex; align-items: center; gap: 7px; }
+.nav-link .lucide { width: 17px; height: 17px; vertical-align: 0; }
+/* Página atual: pílula de vidro mais clara, com o reflexo em cima */
+.topo nav a.ativo {
+    color: #fff;
+    font-weight: 600;
+    background: rgba(255, 255, 255, .18);
+    box-shadow: inset 0 1px 0 var(--vidro-brilho), inset 0 0 0 1px rgba(255, 255, 255, .14);
+}
 
 /* ---------- Área principal ---------- */
 .conteudo {
@@ -648,6 +657,189 @@ h2 .lucide, h3 .lucide { color: var(--acento); margin-right: 4px; }
 .cor-opcao input:checked + span { border-color: #fff; box-shadow: 0 0 14px rgba(255, 255, 255, .5); }
 .cor-opcao input:focus-visible + span { outline: 2px solid var(--acento); outline-offset: 3px; }
 
+/* ================= Página da atividade ================= */
+.atividade-cabecalho { align-items: flex-start; margin-bottom: 20px; }
+.atividade-info { min-width: 0; flex: 1; }
+.atividade-cabecalho h1 { margin-bottom: 12px; overflow-wrap: anywhere; }
+
+/* "Chips": as informações em pílulas de vidro */
+.chips { list-style: none; display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 99px;
+    font-size: .85rem;
+    font-weight: 500;
+    background: rgba(255, 255, 255, .10);
+    border: 1px solid rgba(255, 255, 255, .16);
+}
+.chip .bolinha { width: 10px; height: 10px; box-shadow: none; }
+.chip-urgente {
+    background: linear-gradient(135deg, rgba(235, 55, 95, .75), rgba(170, 45, 150, .65));
+    border-color: rgba(255, 170, 190, .65);
+    font-weight: 600;
+}
+.etiqueta-grande { font-size: .9rem; padding: 10px 16px; }
+
+/* Corpo: descrição larga + coluna com arquivos e grupo */
+.atividade-corpo {
+    display: grid;
+    grid-template-columns: minmax(0, 3fr) minmax(280px, 2fr);
+    gap: 20px;
+    align-items: start;
+}
+.atividade-lateral { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+
+/* Descrição */
+.descricao-texto {
+    white-space: pre-wrap;        /* respeita as quebras de linha que a pessoa digitou */
+    overflow-wrap: anywhere;
+    line-height: 1.65;
+    color: #EEECFF;
+}
+.form-descricao textarea,
+.form-colega input {
+    width: 100%;
+    padding: 12px 14px;
+    font: inherit;
+    color: var(--texto);
+    background: rgba(255, 255, 255, .07);
+    border: 1px solid var(--vidro-borda);
+    border-radius: var(--raio-pequeno);
+}
+.form-descricao textarea { resize: vertical; min-height: 160px; line-height: 1.6; }
+.form-descricao textarea:focus,
+.form-colega input:focus {
+    outline: none;
+    background: rgba(255, 255, 255, .12);
+    border-color: var(--acento);
+    box-shadow: 0 0 0 3px rgba(201, 184, 255, .25);
+}
+.form-descricao ::placeholder,
+.form-colega ::placeholder { color: rgba(220, 216, 255, .55); }
+.form-descricao-acoes { display: flex; justify-content: flex-end; align-items: center; gap: 14px; margin-top: 12px; }
+
+/* Arquivos */
+.icone-arquivo.lucide { width: 22px; height: 22px; color: var(--acento); flex-shrink: 0; }
+.nome-arquivo { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.form-arquivo { display: flex; align-items: center; gap: 12px; margin-top: 14px; }
+.form-arquivo label { cursor: pointer; }
+.vazio-pequeno { color: var(--texto-suave); font-size: .92rem; line-height: 1.5; }
+
+/* Botão redondo só com ícone (o "x" de remover) */
+.botao-icone {
+    width: 32px; height: 32px;
+    display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 50%;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--texto-suave);
+    cursor: pointer;
+    transition: background .2s, color .2s;
+}
+.botao-icone:hover { background: rgba(255, 255, 255, .12); color: #fff; }
+.botao-icone.perigo:hover { background: rgba(235, 55, 95, .30); color: #FFE3EA; }
+
+/* Grupo */
+.avatar-mini { width: 34px; height: 34px; font-size: .95rem; box-shadow: inset 0 1px 0 var(--vidro-brilho); }
+.adicionar-grupo { margin-top: 14px; }
+.lista-add-grupo {
+    margin-top: 10px;
+    padding: 6px;
+    border-radius: var(--raio-pequeno);
+    background: rgba(12, 14, 45, .35);
+    border: 1px solid var(--vidro-borda);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.lista-add-grupo .vazio-pequeno { padding: 8px 10px; }
+.opcao-colega {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border: none;
+    border-radius: 10px;
+    background: transparent;
+    color: var(--texto);
+    font-weight: 500;
+    text-align: left;
+    cursor: pointer;
+    transition: background .2s;
+}
+.opcao-colega span:not(.avatar) { flex: 1; }
+.opcao-colega:hover { background: rgba(255, 255, 255, .12); }
+.opcao-colega > .lucide { color: var(--acento); }
+.link-destaque { color: var(--acento); font-weight: 600; text-decoration: underline; }
+
+/* ================= Colegas ================= */
+.colegas { max-width: 680px; margin: 0 auto; }
+.colegas h1 { font-size: clamp(1.7rem, 4vw, 2.3rem); font-weight: 800; }
+.colegas .frase { margin-bottom: 24px; }
+.colegas .bloco { margin-bottom: 18px; }
+.colegas .bloco > h2 { font-size: 1.1rem; margin-bottom: 14px; }
+.avatar-medio { width: 40px; height: 40px; font-size: 1.05rem; }
+.avatar-grande-medio { width: 56px; height: 56px; font-size: 1.5rem; }
+
+/* Cartão "você + seu ID" */
+.meu-id {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background:
+        radial-gradient(circle at 0% 0%, rgba(130, 80, 255, .45), transparent 65%),
+        var(--vidro);
+}
+.meu-id-texto { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.meu-id-texto strong { font-size: 1.15rem; }
+.meu-id-texto small { color: var(--texto-suave); }
+/* O ID em destaque, num "selo" clicável que copia */
+.codigo {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border-radius: var(--raio-pequeno);
+    font-family: "Plus Jakarta Sans", monospace;
+    font-size: 1.35rem;
+    font-weight: 800;
+    letter-spacing: .12em;
+    color: #fff;
+    background: linear-gradient(135deg, rgba(130, 80, 255, .7), rgba(30, 80, 210, .7));
+    border: 1px solid rgba(200, 190, 255, .5);
+    box-shadow: inset 0 1px 0 var(--vidro-brilho);
+    cursor: pointer;
+    transition: transform .15s;
+}
+.codigo:hover { transform: translateY(-1px); }
+.codigo .lucide { width: 16px; height: 16px; opacity: .8; }
+.codigo.copiado { background: linear-gradient(135deg, rgba(20, 150, 90, .8), rgba(30, 120, 160, .7)); letter-spacing: normal; font-size: 1rem; }
+
+/* Busca */
+.busca { display: flex; gap: 10px; }
+.busca input {
+    flex: 1;
+    min-width: 0;
+    padding: 12px 14px;
+    font: inherit;
+    font-weight: 600;
+    letter-spacing: .05em;
+    text-transform: uppercase;   /* mostra em maiúsculas enquanto digita */
+    color: var(--texto);
+    background: rgba(255, 255, 255, .07);
+    border: 1px solid var(--vidro-borda);
+    border-radius: var(--raio-pequeno);
+}
+.busca input::placeholder { text-transform: none; letter-spacing: normal; font-weight: 400; color: rgba(220, 216, 255, .55); }
+.busca input:focus { outline: none; border-color: var(--acento); box-shadow: 0 0 0 3px rgba(201, 184, 255, .25); }
+.resultado { margin-top: 14px; }
+.etiqueta-neutra { background: rgba(255, 255, 255, .12); border-color: rgba(255, 255, 255, .2); color: var(--texto); }
+.menu-nome small { display: block; font-weight: 600; font-size: .78rem; color: var(--acento); letter-spacing: .06em; margin-top: 2px; }
+
 /* ================= Tablet (e computador com janela estreita) ================= */
 @media (max-width: 960px) {
     /* Uma coluna só; os prazos sobem para antes das atividades (order: -1) */
@@ -656,6 +848,7 @@ h2 .lucide, h3 .lucide { color: var(--acento); margin-right: 4px; }
     .painel-corpo { grid-template-columns: minmax(0, 1fr); }
     .bloco-prazos { position: static; }
     .resumo { grid-template-columns: repeat(2, 1fr); }
+    .atividade-corpo { grid-template-columns: minmax(0, 1fr); }
 }
 
 /* ================= Celular ================= */
@@ -673,17 +866,29 @@ h2 .lucide, h3 .lucide { color: var(--acento); margin-right: 4px; }
     .resumo-rotulo { font-size: .85rem; }
 
     .bloco { padding: 16px; }
-    .bloco-topo { flex-direction: column; align-items: flex-start; }
+    /* Só empilha o topo do bloco quando ele tem filtros (no painel); nos outros, título e botão ficam lado a lado */
+    .bloco-topo:has(.filtros) { flex-direction: column; align-items: flex-start; }
     /* Filtros numa linha que rola para o lado, em vez de quebrar em várias */
     .filtros { flex-wrap: nowrap; overflow-x: auto; width: 100%; padding-bottom: 4px; scrollbar-width: none; }
     .filtro { flex-shrink: 0; }
 
     .lista-item { padding: 10px 12px; gap: 10px; }
     .etiqueta { font-size: .74rem; padding: 4px 9px; }
+    .etiqueta-grande { font-size: .9rem; padding: 12px 8px; }
+    /* Status e Editar dividem a linha meio a meio */
+    .atividade-cabecalho .acoes > * { flex: 1 1 0; min-width: 0; }
 
     .caixa-form { padding: 24px 20px; }
     .duas-colunas { grid-template-columns: 1fr; gap: 0; }
     .materia-cabecalho { padding: 18px; }
     .acoes { width: 100%; }
     .acoes .botao { flex: 1; }
+    .acoes form { flex: 1; }
+    .acoes select.etiqueta { width: 100%; }
+    /* No celular, o menu de cima mostra só os ícones (o texto não cabe) */
+    .nav-texto { display: none; }
+    .meu-id { flex-wrap: wrap; }
+    .meu-id .codigo { width: 100%; justify-content: center; }
+    .topo nav a.nav-link { padding: 9px 11px; }
+    .nav-link .lucide { width: 19px; height: 19px; }
 }

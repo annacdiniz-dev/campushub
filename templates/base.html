@@ -13,8 +13,22 @@
         <a href="{{ url_for('home') }}" class="logo">Campus<span>Hub</span></a>
         <nav>
             {% if current_user.is_authenticated %}
-                <a href="{{ url_for('painel') }}">Painel</a>
-                <a href="{{ url_for('materias.listar') }}">Matérias</a>
+                {# Destaca a página atual. request.endpoint = nome da rota aberta agora (ex.: "painel");
+                   request.blueprint = de qual arquivo ela é (ex.: "materias").
+                   Telas de atividade contam como "Matérias", porque toda atividade mora dentro de uma matéria. #}
+                {% set no_painel = request.endpoint == 'painel' %}
+                {% set em_materias = request.blueprint in ('materias', 'atividades') %}
+                {% set em_colegas = request.blueprint == 'colegas' %}
+                {# Ícone + texto. No celular o texto some e fica só o ícone (o aria-label continua dizendo o nome) #}
+                <a href="{{ url_for('painel') }}" class="nav-link {{ 'ativo' if no_painel }}" aria-label="Painel" {% if no_painel %}aria-current="page"{% endif %}>
+                    <i data-lucide="layout-dashboard"></i><span class="nav-texto">Painel</span>
+                </a>
+                <a href="{{ url_for('materias.listar') }}" class="nav-link {{ 'ativo' if em_materias }}" aria-label="Matérias" {% if em_materias %}aria-current="page"{% endif %}>
+                    <i data-lucide="book-open"></i><span class="nav-texto">Matérias</span>
+                </a>
+                <a href="{{ url_for('colegas.listar') }}" class="nav-link {{ 'ativo' if em_colegas }}" aria-label="Colegas" {% if em_colegas %}aria-current="page"{% endif %}>
+                    <i data-lucide="users"></i><span class="nav-texto">Colegas</span>
+                </a>
                 {# Menu da conta: o botão abre/fecha a lista (o JavaScript lá embaixo cuida disso) #}
                 <div class="menu-conta">
                     <button type="button" class="icone-conta" id="botao-conta"
@@ -27,7 +41,7 @@
                         {% endif %}
                     </button>
                     <div class="menu-lista" id="lista-conta" hidden>
-                        <p class="menu-nome">{{ current_user.nome }}</p>
+                        <p class="menu-nome">{{ current_user.nome }} <small>ID {{ current_user.codigo }}</small></p>
                         <a href="{{ url_for('perfil.editar') }}" class="menu-item"><i data-lucide="user-pen"></i> Editar perfil</a>
                         {# Ainda não existe: fica visível, mas marcado como "em breve" #}
                         <span class="menu-item desativado"><i data-lucide="history"></i> Histórico <small>em breve</small></span>

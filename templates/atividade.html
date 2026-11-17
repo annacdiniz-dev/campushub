@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+{% block titulo %}{{ atividade.titulo }} · CampusHub{% endblock %}
+
+{% block conteudo %}
+{% set materia = atividade.materia %}
+
+<p class="voltar"><a href="{{ url_for('materias.ver', materia_id=materia.id) }}"><i data-lucide="arrow-left"></i> {{ materia.nome }}</a></p>
+
+{# ---------- Cabeçalho: título, informações, status e editar ---------- #}
+<section class="painel-topo materia-cabecalho atividade-cabecalho" style="--cor: {{ materia.cor }}">
+    <div class="atividade-info">
+        <h1>{{ atividade.titulo }}</h1>
+        <ul class="chips">
+            <li class="chip"><i data-lucide="tag"></i> {{ atividade.tipo }}</li>
+            <li class="chip"><i data-lucide="flag"></i> Prioridade {{ atividade.prioridade|lower }}</li>
+            {% if atividade.data_entrega %}
+            <li class="chip {% if dias is not none and 0 <= dias <= 7 and atividade.status != 'Concluído' %}chip-urgente{% endif %}">
+                <i data-lucide="calendar"></i> {{ atividade.data_entrega.strftime('%d/%m/%Y') }}
+                {% if atividade.status != 'Concluído' %}
+                    {% if dias == 0 %}· hoje{% elif dias == 1 %}· amanhã{% elif dias > 1 %}· em {{ dias }} dias{% else %}· atrasada{% endif %}
+                {% endif %}
+            </li>
+            {% endif %}
+            {% if atividade.em_grupo %}<li class="chip"><i data-lucide="users"></i> Em grupo</li>{% endif %}
+        </ul>
+    </div>
+    <div class="acoes">
+        <form method="POST" action="{{ url_for('atividades.mudar_status', atividade_id=atividade.id) }}">
+            <input type="hidden" name="voltar" value="atividade">
+            <select name="status" class="etiqueta etiqueta-grande etiqueta-{{ atividade.status|lower|replace(' ', '-') }}"
+                    onchange="this.form.submit()" aria-label="Status">
+                {% for s in status_opcoes %}
+                <option {% if atividade.status == s %}selected{% endif %}>{{ s }}</option>
+                {% endfor %}
+            </select>
+        </form>
+        <a href="{{ url_for('atividades.editar', atividade_id=atividade.id, voltar='atividade') }}" class="botao botao-contorno">
+            <i data-lucide="pencil"></i> Editar
+        </a>
+    </div>
+</section>
+
+<div class="atividade-corpo">
+
+    {# ---------- Descrição: o que deve ser feito / conteúdo para estudar ---------- #}
+    <section class="bloco">
+        <div class="bloco-topo">
+            <h2><i data-lucide="notebook-pen"></i> Descrição</h2>
+            {% if atividade.descricao %}
+            <button type="button" class="link-botao" id="botao-editar-descricao"><i data-lucide="pencil"></i> Editar</button>
+            {% endif %}
+        </div>
+
+        {% if atividade.descricao %}
+            <div class="descricao-texto" id="descricao-texto">{{ atividade.descricao }}</div>
+        {% endif %}
+
+        {# Sem descrição: o formulário já aparece. Com descrição: fica escondido até clicar em "Editar" #}
+        <form method="POST" action="{{ url_for('atividades.salvar_descricao', atividade_id=atividade.id) }}"
+              class="form-descricao" id="form-descricao" {% if atividade.descricao %}hidden{% endif %}>
+            <textarea name="descricao" rows="8"
+                      placeholder="O que precisa ser feito? Qual conteúdo cai na prova?&#10;Ex.: Capítulos 3 e 4 — integrais por partes e substituição trigonométrica.">{{ atividade.descricao or '' }}</textarea>
+            <div class="form-descricao-acoes">
+                {% if atividade.descricao %}
+                <button type="button" class="link-botao" id="cancelar-descricao">Cancelar</button>
+                {% endif %}
+                <button type="submit" class="botao botao-pequeno">Salvar descrição</button>
+            </div>
+        </form>
+    </section>
+
+    <div class="atividade-lateral">
+
+        {# ---------- Arquivos ---------- #}
+        <section class="bloco">
+            <div class="bloco-topo">
+                <h2><i data-lucide="paperclip"></i> Arquivos</h2>
+            </div>
+
+            {% if atividade.arquivos %}
+            {# Ícone de acordo com o tipo do arquivo #}
+            {% set icones = {'pdf': 'file-text', 'doc': 'file-text', 'docx': 'file-text', 'odt': 'file-text', 'txt': 'file-text',
+                             'md': 'file-text', 'rtf': 'file-text', 'ppt': 'presentation', 'pptx': 'presentation', 'odp': 'presentation',
+                             'xls': 'file-spreadsheet', 'xlsx': 'file-spreadsheet', 'ods': 'file-spreadsheet', 'csv': 'file-spreadsheet',
+                             'png': 'image', 'jpg': 'image', 'jpeg': 'image', 'webp': 'image', 'gif': 'image', 'zip': 'file-archive'} %}
+            <ul class="lista">
+                {% for arq in atividade.arquivos %}
+                <li class="lista-item">
+                    <i data-lucide="{{ icones.get(arq.extensao, 'file-code') }}" class="icone-arquivo"></i>
+                    <div class="lista-texto">
+                        <a href="{{ url_for('atividades.abrir_arquivo', atividade_id=atividade.id, arquivo_id=arq.id) }}"
+                           class="titulo-link nome-arquivo" target="_blank" rel="noopener">{{ arq.nome_original }}</a>
+                        <small>{{ arq.tamanho_legivel }} · {{ arq.enviado_em.strftime('%d/%m') }}</small>
+                    </div>
+                    <form method="POST" action="{{ url_for('atividades.excluir_arquivo', atividade_id=atividade.id, arquivo_id=arq.id) }}"
+                          data-nome="{{ arq.nome_original }}" onsubmit="return confirm('Remover ' + this.dataset.nome + '?');">
+                        <button type="submit" class="botao-icone perigo" aria-label="Remover {{ arq.nome_original }}"><i data-lucide="x"></i></button>
+                    </form>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p class="vazio-pequeno">Nenhum arquivo ainda. Anexe a lista de exercícios, slides, o enunciado...</p>
+            {% endif %}
+
+            {# Escolheu o arquivo -> o formulário já se envia sozinho #}
+            <form method="POST" action="{{ url_for('atividades.enviar_arquivo', atividade_id=atividade.id) }}"
+                  enctype="multipart/form-data" class="form-arquivo">
+                <input type="file" name="arquivo" id="campo-arquivo" hidden
+                       accept="{% for e in extensoes %}.{{ e }}{{ ',' if not loop.last }}{% endfor %}"
+                       onchange="this.form.submit()">
+                <label for="campo-arquivo" class="botao botao-contorno botao-pequeno"><i data-lucide="upload"></i> Adicionar arquivo</label>
+                <small class="dica">Até 10 MB</small>
+            </form>
+        </section>
+
+        {# ---------- Colegas (só em atividades em grupo) ---------- #}
+        {% if atividade.em_grupo %}
+        <section class="bloco">
+            <div class="bloco-topo">
+                <h2><i data-lucide="users"></i> Grupo</h2>
+                <span class="contador">{{ atividade.membros|length + 1 }} pessoa{{ 's' if atividade.membros }}</span>
+            </div>
+
+            {# Avatar redondo: foto, ou a inicial do nome #}
+            {% macro avatar(usuario) %}
+            <span class="avatar avatar-mini">
+                {% if usuario.foto %}<img src="{{ url_for('static', filename='uploads/fotos/' ~ usuario.foto) }}" alt="">{% else %}{{ usuario.nome[0]|upper }}{% endif %}
+            </span>
+            {% endmacro %}
+
+            <ul class="lista">
+                {# Você sempre faz parte do grupo #}
+                <li class="lista-item">
+                    {{ avatar(current_user) }}
+                    <div class="lista-texto"><strong>{{ current_user.nome }}</strong><small>Você</small></div>
+                </li>
+                {% for membro in atividade.membros|sort(attribute='usuario.nome') %}
+                <li class="lista-item">
+                    {{ avatar(membro.usuario) }}
+                    <div class="lista-texto">
+                        <strong>{{ membro.usuario.nome }}</strong>
+                        <small>ID {{ membro.usuario.codigo }}</small>
+                    </div>
+                    <form method="POST" action="{{ url_for('atividades.remover_do_grupo', atividade_id=atividade.id, membro_id=membro.id) }}"
+                          data-nome="{{ membro.usuario.nome }}" onsubmit="return confirm('Tirar ' + this.dataset.nome + ' do grupo?');">
+                        <button type="submit" class="botao-icone perigo" aria-label="Tirar {{ membro.usuario.nome }} do grupo"><i data-lucide="x"></i></button>
+                    </form>
+                </li>
+                {% endfor %}
+            </ul>
+
+            {# "Adicionar colega": abre a lista dos seus colegas que ainda não estão no grupo #}
+            <div class="adicionar-grupo">
+                <button type="button" class="botao botao-pequeno" id="botao-add-grupo" aria-expanded="false" aria-controls="lista-add-grupo">
+                    <i data-lucide="user-plus"></i> Adicionar colega
+                </button>
+                <div class="lista-add-grupo" id="lista-add-grupo" hidden>
+                    {% if disponiveis %}
+                        {% for colega in disponiveis %}
+                        <form method="POST" action="{{ url_for('atividades.adicionar_ao_grupo', atividade_id=atividade.id) }}">
+                            <input type="hidden" name="usuario_id" value="{{ colega.id }}">
+                            <button type="submit" class="opcao-colega">
+                                {{ avatar(colega) }} <span>{{ colega.nome }}</span> <i data-lucide="plus"></i>
+                            </button>
+                        </form>
+                        {% endfor %}
+                    {% elif current_user.lista_colegas() %}
+                        <p class="vazio-pequeno">Todos os seus colegas já estão no grupo.</p>
+                    {% else %}
+                        <p class="vazio-pequeno">Você ainda não tem colegas. <a href="{{ url_for('colegas.listar') }}" class="link-destaque">Adicione pelo ID</a> e depois volte aqui.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </section>
+        {% endif %}
+
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Botão "Editar" da descrição: troca o texto pelo formulário (e "Cancelar" desfaz)
+    const botaoEditar = document.getElementById("botao-editar-descricao");
+    if (botaoEditar) {
+        const texto = document.getElementById("descricao-texto");
+        const form = document.getElementById("form-descricao");
+        function editando(sim) {
+            texto.hidden = sim;
+            form.hidden = !sim;
+            botaoEditar.hidden = sim;
+            if (sim) form.querySelector("textarea").focus();
+        }
+        botaoEditar.addEventListener("click", () => editando(true));
+        document.getElementById("cancelar-descricao").addEventListener("click", () => editando(false));
+    }
+
+    // Botão "Adicionar colega" do grupo: abre/fecha a lista de colegas
+    const botaoGrupo = document.getElementById("botao-add-grupo");
+    if (botaoGrupo) {
+        const listaGrupo = document.getElementById("lista-add-grupo");
+        botaoGrupo.addEventListener("click", () => {
+            listaGrupo.hidden = !listaGrupo.hidden;
+            botaoGrupo.setAttribute("aria-expanded", !listaGrupo.hidden);
+        });
+    }
+</script>
+{% endblock %}

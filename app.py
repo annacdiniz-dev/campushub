@@ -1,14 +1,15 @@
 import os
 from datetime import date, timedelta
 
-from flask import Flask, redirect, render_template, url_for
+from flask import Flask, flash, redirect, render_template, request, url_for
 from flask_login import LoginManager, current_user, login_required
 from sqlalchemy import inspect, text
 
 from atividades import atividades
 from auth import auth
 from materias import materias
-from models import STATUS, Atividade, Materia, Usuario, db
+from colegas import colegas
+from models import STATUS, Atividade, Materia, Usuario, db, gerar_codigo_unico
 from perfil import perfil
 
 app = Flask(__name__)
@@ -17,8 +18,8 @@ app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///campushub.db"
 # Chave usada para assinar o login (cookies). Em produção vem de variável de ambiente.
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "chave-de-desenvolvimento")
-# Tamanho máximo de um envio (ex.: foto de perfil): 2 MB
-app.config["MAX_CONTENT_LENGTH"] = 2 * 1024 * 1024
+# Tamanho máximo de qualquer envio (arquivo de atividade, foto...): 10 MB
+app.config["MAX_CONTENT_LENGTH"] = 10 * 1024 * 1024
 
 db.init_app(app)
 
@@ -40,6 +41,7 @@ app.register_blueprint(auth)       # cadastro, login, logout (auth.py)
 app.register_blueprint(materias)   # matérias (materias.py)
 app.register_blueprint(atividades) # provas, trabalhos, projetos (atividades.py)
 app.register_blueprint(perfil)     # editar foto, nome e e-mail (perfil.py)
+app.register_blueprint(colegas)    # adicionar colegas pelo ID (colegas.py)
 
 # Cria as tabelas que ainda não existem no banco
 with app.app_context():
@@ -52,6 +54,24 @@ with app.app_context():
     if "foto" not in colunas:
         db.session.execute(text("ALTER TABLE usuarios ADD COLUMN foto VARCHAR(255)"))
         db.session.commit()
+
+    # Mesma coisa para o ID de 4 caracteres...
+    if "codigo" not in colunas:
+        db.session.execute(text("ALTER TABLE usuarios ADD COLUMN codigo VARCHAR(4)"))
+        # ...com um índice UNIQUE: o próprio banco recusa dois usuários com o mesmo ID
+        db.session.execute(text("CREATE UNIQUE INDEX IF NOT EXISTS ix_usuarios_codigo ON usuarios (codigo)"))
+        db.session.commit()
+    # Quem criou a conta antes dos IDs existirem ganha um agora
+    for usuario in Usuario.query.filter_by(codigo=None).all():
+        usuario.codigo = gerar_codigo_unico()
+        db.session.commit()  # um por vez, para o sorteio já enxergar os IDs anteriores
+
+
+@app.errorhandler(413)
+def envio_grande_demais(erro):
+    """Erro 413 = o envio passou do MAX_CONTENT_LENGTH. Volta para a página de onde veio."""
+    flash("Arquivo grande demais. O limite é 10 MB.", "erro")
+    return redirect(request.referrer or url_for("painel"))
 
 
 @app.route("/")

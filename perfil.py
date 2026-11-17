@@ -11,6 +11,7 @@ from models import Usuario, db
 perfil = Blueprint("perfil", __name__, url_prefix="/perfil")
 
 EXTENSOES_FOTO = {"png", "jpg", "jpeg", "webp", "gif"}
+TAMANHO_MAX_FOTO = 2 * 1024 * 1024  # 2 MB
 # Formato básico de e-mail: algo@algo.algo (sem espaços)
 EMAIL_VALIDO = re.compile(r"[^@\s]+@[^@\s]+\.[^@\s]+")
 
@@ -48,6 +49,15 @@ def trocar_foto():
     extensao = arquivo.filename.rsplit(".", 1)[-1].lower() if "." in arquivo.filename else ""
     if extensao not in EXTENSOES_FOTO or not arquivo.mimetype.startswith("image/"):
         flash("Envie uma imagem PNG, JPG, WEBP ou GIF.", "erro")
+        return redirect(url_for("perfil.editar"))
+
+    # Foto tem limite próprio (2 MB), menor que o geral do site (10 MB).
+    # seek(0, 2) pula para o fim do arquivo; tell() diz em que posição está = tamanho.
+    arquivo.stream.seek(0, os.SEEK_END)
+    tamanho = arquivo.stream.tell()
+    arquivo.stream.seek(0)  # volta para o começo, senão o save() salvaria um arquivo vazio
+    if tamanho > TAMANHO_MAX_FOTO:
+        flash("Imagem grande demais. O limite é 2 MB.", "erro")
         return redirect(url_for("perfil.editar"))
 
     # Segurança: NUNCA usamos o nome que veio do computador da pessoa
@@ -110,8 +120,3 @@ def trocar_email():
     return redirect(url_for("perfil.editar"))
 
 
-@perfil.app_errorhandler(413)
-def arquivo_grande_demais(erro):
-    """Erro 413 = o envio passou do MAX_CONTENT_LENGTH (2 MB, definido no app.py)."""
-    flash("Imagem grande demais. O limite é 2 MB.", "erro")
-    return redirect(url_for("perfil.editar"))
