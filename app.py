@@ -3,11 +3,13 @@ from datetime import date, timedelta
 
 from flask import Flask, redirect, render_template, url_for
 from flask_login import LoginManager, current_user, login_required
+from sqlalchemy import inspect, text
 
 from atividades import atividades
 from auth import auth
 from materias import materias
 from models import STATUS, Atividade, Materia, Usuario, db
+from perfil import perfil
 
 app = Flask(__name__)
 
@@ -15,6 +17,8 @@ app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///campushub.db"
 # Chave usada para assinar o login (cookies). Em produção vem de variável de ambiente.
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "chave-de-desenvolvimento")
+# Tamanho máximo de um envio (ex.: foto de perfil): 2 MB
+app.config["MAX_CONTENT_LENGTH"] = 2 * 1024 * 1024
 
 db.init_app(app)
 
@@ -35,10 +39,19 @@ def carregar_usuario(usuario_id):
 app.register_blueprint(auth)       # cadastro, login, logout (auth.py)
 app.register_blueprint(materias)   # matérias (materias.py)
 app.register_blueprint(atividades) # provas, trabalhos, projetos (atividades.py)
+app.register_blueprint(perfil)     # editar foto, nome e e-mail (perfil.py)
 
 # Cria as tabelas que ainda não existem no banco
 with app.app_context():
     db.create_all()
+
+    # Mini "migração": o create_all() cria tabelas NOVAS, mas não adiciona colunas
+    # novas numa tabela que já existe. Como a tabela "usuarios" já existia antes
+    # da coluna "foto", adicionamos ela na mão (só se ainda não estiver lá).
+    colunas = [c["name"] for c in inspect(db.engine).get_columns("usuarios")]
+    if "foto" not in colunas:
+        db.session.execute(text("ALTER TABLE usuarios ADD COLUMN foto VARCHAR(255)"))
+        db.session.commit()
 
 
 @app.route("/")

@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block titulo %}Editar perfil · CampusHub{% endblock %}
+
+{% block conteudo %}
+<div class="perfil">
+    <p class="voltar"><a href="{{ url_for('painel') }}"><i data-lucide="arrow-left"></i> Painel</a></p>
+    <h1>Editar perfil</h1>
+    <p class="frase">Mude sua foto, seu nome ou seu e-mail.</p>
+
+    {# ---------- Editar foto ---------- #}
+    <section class="bloco perfil-secao">
+        <h2><i data-lucide="camera"></i> Editar foto</h2>
+        <div class="perfil-foto">
+            <div class="avatar avatar-grande" id="previa-foto">
+                {% if current_user.foto %}
+                    <img src="{{ url_for('static', filename='uploads/fotos/' ~ current_user.foto) }}" alt="Sua foto">
+                {% else %}
+                    {{ current_user.nome[0]|upper }}
+                {% endif %}
+            </div>
+
+            <div class="perfil-foto-acoes">
+                {# enctype="multipart/form-data": obrigatório para o formulário conseguir enviar arquivos #}
+                <form method="POST" action="{{ url_for('perfil.trocar_foto') }}" enctype="multipart/form-data">
+                    {# O input de arquivo fica escondido; o <label> estilizado é que a pessoa clica #}
+                    <input type="file" name="foto" id="campo-foto" accept="image/png, image/jpeg, image/webp, image/gif" hidden>
+                    <label for="campo-foto" class="botao botao-contorno botao-pequeno"><i data-lucide="image-up"></i> Escolher imagem</label>
+                    <button type="submit" class="botao botao-pequeno" id="salvar-foto" hidden>Salvar foto</button>
+                </form>
+                {% if current_user.foto %}
+                <form method="POST" action="{{ url_for('perfil.remover_foto') }}" onsubmit="return confirm('Remover sua foto?');">
+                    <button type="submit" class="link-botao perigo"><i data-lucide="trash-2"></i> Remover foto</button>
+                </form>
+                {% endif %}
+                <small class="dica">PNG, JPG, WEBP ou GIF · até 2 MB</small>
+            </div>
+        </div>
+    </section>
+
+    {# ---------- Editar nome ---------- #}
+    <section class="bloco perfil-secao">
+        <h2><i data-lucide="user-pen"></i> Editar nome</h2>
+        <form method="POST" action="{{ url_for('perfil.trocar_nome') }}" class="perfil-form">
+            <label for="nome">Nome</label>
+            <div class="perfil-linha">
+                <input type="text" id="nome" name="nome" value="{{ current_user.nome }}" maxlength="100" required>
+                <button type="submit" class="botao">Salvar</button>
+            </div>
+        </form>
+    </section>
+
+    {# ---------- Editar e-mail ---------- #}
+    <section class="bloco perfil-secao">
+        <h2><i data-lucide="mail"></i> Editar e-mail</h2>
+        <form method="POST" action="{{ url_for('perfil.trocar_email') }}" class="perfil-form">
+            <label for="email">Novo e-mail</label>
+            <input type="email" id="email" name="email" value="{{ current_user.email }}" required>
+
+            <label for="senha">Senha atual <small>(para confirmar que é você)</small></label>
+            <div class="perfil-linha">
+                <input type="password" id="senha" name="senha" required autocomplete="current-password">
+                <button type="submit" class="botao">Salvar</button>
+            </div>
+        </form>
+    </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Ao escolher uma imagem: mostra a prévia no círculo e aparece o botão "Salvar foto"
+    const campoFoto = document.getElementById("campo-foto");
+    campoFoto.addEventListener("change", () => {
+        const arquivo = campoFoto.files[0];
+        if (!arquivo) return;
+        // URL.createObjectURL cria um endereço temporário para a imagem que ainda está no seu computador
+        document.getElementById("previa-foto").innerHTML =
+            `<img src="${URL.createObjectURL(arquivo)}" alt="Prévia da nova foto">`;
+        document.getElementById("salvar-foto").hidden = false;
+    });
+</script>
+{% endblock %}

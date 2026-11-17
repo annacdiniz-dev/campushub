@@ -17,6 +17,8 @@ class Usuario(UserMixin, db.Model):  # UserMixin ensina o Flask-Login a lidar co
     nome = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     senha_hash = db.Column(db.String(255), nullable=False)
+    # Só o NOME do arquivo da foto (ex.: "3_a1b2c3.jpg"). A imagem fica em static/uploads/fotos/
+    foto = db.Column(db.String(255), nullable=True)
     criado_em = db.Column(db.DateTime, nullable=False, default=db.func.current_timestamp())
 
     # Atalho: usuario.materias -> lista de matérias desse usuário

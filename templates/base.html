@@ -19,12 +19,17 @@
                 <div class="menu-conta">
                     <button type="button" class="icone-conta" id="botao-conta"
                             aria-label="Minha conta" aria-haspopup="true" aria-expanded="false" aria-controls="lista-conta">
-                        <i data-lucide="user"></i>
+                        {# Com foto: mostra a foto. Sem foto: o bonequinho #}
+                        {% if current_user.foto %}
+                            <img src="{{ url_for('static', filename='uploads/fotos/' ~ current_user.foto) }}" alt="">
+                        {% else %}
+                            <i data-lucide="user"></i>
+                        {% endif %}
                     </button>
                     <div class="menu-lista" id="lista-conta" hidden>
                         <p class="menu-nome">{{ current_user.nome }}</p>
-                        {# Ainda não existem: ficam visíveis, mas marcados como "em breve" #}
-                        <span class="menu-item desativado"><i data-lucide="user-pen"></i> Editar perfil <small>em breve</small></span>
+                        <a href="{{ url_for('perfil.editar') }}" class="menu-item"><i data-lucide="user-pen"></i> Editar perfil</a>
+                        {# Ainda não existe: fica visível, mas marcado como "em breve" #}
                         <span class="menu-item desativado"><i data-lucide="history"></i> Histórico <small>em breve</small></span>
                         <a href="{{ url_for('auth.logout') }}" class="menu-item perigo"><i data-lucide="log-out"></i> Sair</a>
                     </div>

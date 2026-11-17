@@ -5,3 +5,6 @@ __pycache__/
 
 instance/
 *.db
+
+# Fotos enviadas pelos usuários: são dados, não código
+static/uploads/

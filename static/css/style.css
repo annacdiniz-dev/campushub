@@ -320,15 +320,17 @@ select option { background: #1E1A5C; color: #fff; }
     50% { box-shadow: inset 0 1px 0 rgba(255, 220, 230, .6), 0 10px 50px rgba(235, 55, 95, .65); }
 }
 
-/* Corpo do painel: atividades (larga) + prazos (lateral) */
+/* Corpo do painel: prazos (estreita, à esquerda) + atividades (larga) */
 .painel-corpo {
     display: grid;
-    grid-template-columns: minmax(0, 2fr) minmax(300px, 1fr);
+    grid-template-columns: minmax(260px, 1fr) minmax(0, 2fr);
     gap: 20px;
     align-items: start;   /* cada coluna com a própria altura */
 }
 /* No computador, os prazos "grudam" no topo enquanto você rola a lista de atividades */
 .bloco-prazos { position: sticky; top: 100px; }
+/* Item de prazo: bolinha · título (ocupa o espaço que sobrar) · balão com a data */
+.prazo-titulo { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 /* Blocos (as caixas de vidro grandes) */
 .bloco {
@@ -462,6 +464,63 @@ h2 .lucide, h3 .lucide { color: var(--acento); margin-right: 4px; }
 .icone-conta[aria-expanded="true"] { background: rgba(255, 255, 255, .28); }
 .icone-conta:focus-visible { outline: 2px solid var(--acento); outline-offset: 3px; }
 .icone-conta .lucide { width: 18px; height: 18px; vertical-align: 0; }
+.icone-conta { overflow: hidden; }
+.icone-conta img { width: 100%; height: 100%; object-fit: cover; }
+
+/* ================= Editar perfil ================= */
+.perfil { max-width: 620px; margin: 0 auto; }
+.perfil h1 { font-size: clamp(1.7rem, 4vw, 2.3rem); font-weight: 800; }
+.perfil .frase { margin-bottom: 24px; }
+.perfil-secao { margin-bottom: 18px; }
+.perfil-secao h2 { font-size: 1.1rem; margin-bottom: 16px; }
+
+/* Foto: círculo grande + botões ao lado */
+.perfil-foto { display: flex; align-items: center; gap: 22px; flex-wrap: wrap; }
+.avatar {
+    border-radius: 50%;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-family: "Plus Jakarta Sans", sans-serif;
+    font-weight: 800;
+    color: #fff;
+    background: linear-gradient(135deg, rgba(130, 80, 255, .8), rgba(30, 80, 210, .8));
+    border: 1px solid var(--vidro-borda);
+    box-shadow: inset 0 1px 0 var(--vidro-brilho), 0 8px 30px rgba(90, 70, 255, .35);
+}
+.avatar img { width: 100%; height: 100%; object-fit: cover; }
+.avatar-grande { width: 104px; height: 104px; font-size: 2.6rem; }
+.perfil-foto-acoes { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; }
+.perfil-foto-acoes form { display: flex; gap: 8px; flex-wrap: wrap; }
+.perfil-foto-acoes label { cursor: pointer; }
+.dica { color: var(--texto-suave); font-size: .82rem; }
+
+/* Campos do perfil (mesmo visual dos formulários) */
+.perfil-form { display: flex; flex-direction: column; }
+.perfil-form label { font-weight: 500; font-size: .9rem; margin-bottom: 6px; color: var(--texto-suave); }
+.perfil-form label small { font-weight: 400; opacity: .85; }
+.perfil-form input {
+    width: 100%;
+    padding: 12px 14px;
+    margin-bottom: 16px;
+    font: inherit;
+    color: var(--texto);
+    background: rgba(255, 255, 255, .07);
+    border: 1px solid var(--vidro-borda);
+    border-radius: var(--raio-pequeno);
+}
+.perfil-form input:focus {
+    outline: none;
+    background: rgba(255, 255, 255, .12);
+    border-color: var(--acento);
+    box-shadow: 0 0 0 3px rgba(201, 184, 255, .25);
+}
+/* Campo + botão "Salvar" na mesma linha */
+.perfil-linha { display: flex; gap: 10px; align-items: flex-start; }
+.perfil-linha input { flex: 1; min-width: 0; margin-bottom: 0; }
+.perfil-linha .botao { flex-shrink: 0; padding-top: 12px; padding-bottom: 12px; }
 
 /* A lista que abre embaixo do bonequinho */
 .menu-lista {
@@ -595,7 +654,7 @@ h2 .lucide, h3 .lucide { color: var(--acento); margin-right: 4px; }
     /* minmax(0, 1fr) e não só 1fr: "1fr" nunca encolhe menos que o conteúdo mais largo
        (a fileira de filtros), e isso estourava a tela do celular */
     .painel-corpo { grid-template-columns: minmax(0, 1fr); }
-    .bloco-prazos { position: static; order: -1; }
+    .bloco-prazos { position: static; }
     .resumo { grid-template-columns: repeat(2, 1fr); }
 }
 

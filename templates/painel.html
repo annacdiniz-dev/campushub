@@ -32,10 +32,38 @@
     </div>
 </section>
 
-{# ---------- Corpo: atividades (coluna larga) + próximos prazos (coluna lateral) ----------
-     No computador ficam lado a lado; no tablet/celular, empilhados com os prazos primeiro.
-     Quem decide a ordem e as colunas é o CSS (.painel-corpo). #}
+{# ---------- Corpo: próximos prazos (primeiro) + atividades ----------
+     No computador ficam lado a lado (prazos à esquerda); no tablet/celular, empilhados.
+     Quem decide as colunas é o CSS (.painel-corpo). #}
 <div class="painel-corpo">
+
+    <aside class="bloco bloco-prazos">
+        <div class="bloco-topo">
+            <h2><i data-lucide="calendar"></i> Próximos prazos</h2>
+        </div>
+        {% if proximos %}
+            <ul class="lista">
+                {% for a in proximos %}
+                {% set dias = (a.data_entrega - hoje).days %}
+                <li class="lista-item prazo-item">
+                    {# Bolinha com a cor da matéria; o nome dela aparece ao passar o mouse #}
+                    <span class="bolinha" style="background: {{ a.materia.cor }}" title="{{ a.materia.nome }}"></span>
+                    <a href="{{ url_for('atividades.editar', atividade_id=a.id) }}" class="titulo-link prazo-titulo"><strong>{{ a.titulo }}</strong></a>
+                    {# Balão com a data de entrega. Cor: vermelho se vence em até 7 dias
+                       (igual ao cartão "Vencem em 7 dias"); senão, a cor do status #}
+                    <span class="etiqueta {% if dias <= 7 %}etiqueta-urgente{% else %}etiqueta-{{ a.status|lower|replace(' ', '-') }}{% endif %}"
+                          title="{% if dias == 0 %}Hoje{% elif dias == 1 %}Amanhã{% else %}Em {{ dias }} dias{% endif %} · {{ a.status }}">
+                        {{ a.data_entrega.strftime('%d/%m') }}
+                    </span>
+                </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <div class="vazio">
+                <p>Nenhum prazo chegando. Aproveite!</p>
+            </div>
+        {% endif %}
+    </aside>
 
     <section class="bloco bloco-atividades">
         <div class="bloco-topo">
@@ -67,35 +95,6 @@
             </div>
         {% endif %}
     </section>
-
-    <aside class="bloco bloco-prazos">
-        <div class="bloco-topo">
-            <h2><i data-lucide="calendar"></i> Próximos prazos</h2>
-        </div>
-        {% if proximos %}
-            <ul class="lista">
-                {% for a in proximos %}
-                {% set dias = (a.data_entrega - hoje).days %}
-                <li class="lista-item">
-                    <div class="lista-texto">
-                        <a href="{{ url_for('atividades.editar', atividade_id=a.id) }}" class="titulo-link"><strong>{{ a.titulo }}</strong></a>
-                        <small>{{ a.materia.nome }} · {{ a.tipo }} · {{ a.data_entrega.strftime('%d/%m') }}</small>
-                    </div>
-                    {# Cor do balão: vermelho se vence em até 7 dias (igual ao cartão "Vencem em 7 dias");
-                       senão, a cor do status (pendente = amarelo, em andamento = azul, concluído = verde) #}
-                    <span class="etiqueta {% if dias <= 7 %}etiqueta-urgente{% else %}etiqueta-{{ a.status|lower|replace(' ', '-') }}{% endif %}"
-                          title="{{ a.status }}">
-                        {% if dias == 0 %}hoje{% elif dias == 1 %}amanhã{% else %}em {{ dias }} dias{% endif %}
-                    </span>
-                </li>
-                {% endfor %}
-            </ul>
-        {% else %}
-            <div class="vazio">
-                <p>Nenhum prazo chegando. Aproveite!</p>
-            </div>
-        {% endif %}
-    </aside>
 
 </div>
 
