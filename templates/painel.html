@@ -77,13 +77,14 @@
                 {% for a in proximos %}
                 {% set dias = (a.data_entrega - hoje).days %}
                 <li class="lista-item">
-                    <span class="bolinha" style="background: {{ a.materia.cor }}"></span>
                     <div class="lista-texto">
                         <a href="{{ url_for('atividades.editar', atividade_id=a.id) }}" class="titulo-link"><strong>{{ a.titulo }}</strong></a>
                         <small>{{ a.materia.nome }} · {{ a.tipo }} · {{ a.data_entrega.strftime('%d/%m') }}</small>
                     </div>
-                    {# Quanto falta: fica avermelhado quando é em até 3 dias #}
-                    <span class="faltam {% if dias <= 3 %}perto{% endif %}">
+                    {# Cor do balão: vermelho se vence em até 7 dias (igual ao cartão "Vencem em 7 dias");
+                       senão, a cor do status (pendente = amarelo, em andamento = azul, concluído = verde) #}
+                    <span class="etiqueta {% if dias <= 7 %}etiqueta-urgente{% else %}etiqueta-{{ a.status|lower|replace(' ', '-') }}{% endif %}"
+                          title="{{ a.status }}">
                         {% if dias == 0 %}hoje{% elif dias == 1 %}amanhã{% else %}em {{ dias }} dias{% endif %}
                     </span>
                 </li>
