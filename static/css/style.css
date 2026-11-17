@@ -1,43 +1,141 @@
+/* =====================================================================
+   CampusHub · estilo "vidro líquido" (glassmorphism)
+   A ideia: um fundo colorido e escuro, e por cima "placas de vidro"
+   translúcidas que desfocam o que está atrás (backdrop-filter).
+   ===================================================================== */
+
 /* Cores e medidas reaproveitadas no site todo */
 :root {
-    --roxo: #6C63FF;
-    --roxo-escuro: #4B44C9;
-    --fundo: #F5F6FA;
-    --branco: #FFFFFF;
-    --texto: #1F2233;
-    --texto-suave: #6B7080;
-    --borda: #E3E5EE;
-    --raio: 12px;
+    /* Fundo */
+    --ceu-topo: #3F18C9;        /* roxo vibrante lá em cima */
+    --ceu-meio: #241A6E;
+    --ceu-base: #0E1530;        /* azul-marinho bem escuro embaixo */
+
+    /* Vidro: um brilho branco por cima + um fundo levemente escuro.
+       O tom escuro deixa o texto branco mais fácil de ler sem perder a transparência. */
+    --vidro: linear-gradient(180deg, rgba(255, 255, 255, .11), rgba(255, 255, 255, .04)), rgba(14, 16, 52, .32);
+    --vidro-forte: linear-gradient(180deg, rgba(255, 255, 255, .17), rgba(255, 255, 255, .08)), rgba(14, 16, 52, .30);
+    --vidro-borda: rgba(255, 255, 255, .18);
+    --vidro-brilho: rgba(255, 255, 255, .35);   /* reflexo na borda de cima */
+    --desfoque: blur(22px) saturate(160%);
+
+    /* Texto e destaque */
+    --texto: #FFFFFF;
+    --texto-suave: #D3D0F2;     /* sólido (não transparente): bem mais legível */
+    --acento: #CBBEFF;          /* lilás claro: links, ícones, números */
+    --gradiente-titulo: linear-gradient(100deg, #E2D6FF 0%, #A9B8FF 50%, #7FA2FF 100%);
+    --perigo: #FFA8B0;
+
+    --raio: 20px;
+    --raio-pequeno: 14px;
+    --sombra: 0 10px 40px rgba(10, 5, 40, .35);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
     font-family: "Inter", system-ui, sans-serif;
-    background: var(--fundo);
     color: var(--texto);
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+    /* Fundo em camadas: brilho azul profundo + brilho roxo + o degradê do céu */
+    background:
+        radial-gradient(ellipse 70% 45% at 15% 35%, rgba(30, 70, 200, .55), transparent 70%),
+        radial-gradient(ellipse 60% 40% at 85% 10%, rgba(120, 80, 255, .50), transparent 70%),
+        linear-gradient(180deg, var(--ceu-topo) 0%, var(--ceu-meio) 45%, var(--ceu-base) 85%);
+    background-color: var(--ceu-base);
+    background-attachment: fixed;
+    position: relative;
+    isolation: isolate;
+}
+
+/* "Bolhas" de luz que flutuam devagar atrás de tudo: o toque de "água" */
+body::before,
+body::after {
+    content: "";
+    position: fixed;
+    z-index: -1;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: .45;
+    pointer-events: none;
+}
+body::before {
+    width: 420px; height: 420px;
+    background: #7B3DFF;
+    top: 55%; left: -120px;
+    animation: flutuar 18s ease-in-out infinite alternate;
+}
+body::after {
+    width: 360px; height: 360px;
+    background: #1F4FD1;
+    top: 20%; right: -100px;
+    animation: flutuar 22s ease-in-out infinite alternate-reverse;
+}
+@keyframes flutuar {
+    to { transform: translate(80px, -60px) scale(1.15); }
+}
+/* Quem pede "menos movimento" no sistema não vê a animação */
+@media (prefers-reduced-motion: reduce) {
+    body::before, body::after, .resumo-card.urgente { animation: none; }
+    * { transition: none !important; }
 }
 
 a { color: inherit; text-decoration: none; }
+button { font: inherit; }
+h1, h2, h3 { font-family: "Plus Jakarta Sans", "Inter", sans-serif; letter-spacing: -.01em; }
 
-/* Cabeçalho */
+/* ---------- A "receita" do vidro: reaproveitada em vários lugares ---------- */
+.topo,
+.card,
+.caixa-form,
+.resumo-card,
+.bloco,
+.materia-card,
+.alerta {
+    background: var(--vidro);
+    -webkit-backdrop-filter: var(--desfoque);
+    backdrop-filter: var(--desfoque);
+    border: 1px solid var(--vidro-borda);
+    /* inset = sombra "para dentro": cria o reflexo de luz na borda de cima */
+    box-shadow: inset 0 1px 0 var(--vidro-brilho), var(--sombra);
+}
+
+/* ---------- Cabeçalho ---------- */
 .topo {
-    background: var(--branco);
-    border-bottom: 1px solid var(--borda);
-    padding: 16px 24px;
+    position: sticky;
+    top: 12px;
+    z-index: 10;
+    margin: 12px auto 0;
+    width: calc(100% - 32px);
+    max-width: 1100px;
+    padding: 12px 20px;
+    border-radius: 99px;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 12px;
 }
-.logo { font-size: 1.4rem; font-weight: 700; }
-.logo span, .hero h1 span { color: var(--roxo); }
-.topo nav a { margin-left: 20px; color: var(--texto-suave); font-weight: 500; }
-.topo nav a:hover { color: var(--roxo); }
+.logo { font-family: "Plus Jakarta Sans", sans-serif; font-size: 1.35rem; font-weight: 800; }
+.logo span,
+.hero h1 span {
+    background: var(--gradiente-titulo);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+.topo nav { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.topo nav a {
+    color: var(--texto-suave);
+    font-weight: 500;
+    padding: 8px 14px;
+    border-radius: 99px;
+    transition: background .2s, color .2s;
+}
+.topo nav a:hover { color: var(--texto); background: var(--vidro-forte); }
 
-/* Área principal */
+/* ---------- Área principal ---------- */
 .conteudo {
     flex: 1;
     width: 100%;
@@ -46,123 +144,132 @@ a { color: inherit; text-decoration: none; }
     padding: 48px 16px;
 }
 
-.hero { text-align: center; margin-bottom: 48px; }
-.hero h1 { font-size: 2.4rem; margin-bottom: 12px; }
-.hero p { color: var(--texto-suave); font-size: 1.1rem; }
+.hero { text-align: center; margin: 24px 0 56px; }
+.hero h1 { font-size: clamp(2.2rem, 6vw, 3.6rem); line-height: 1.1; margin-bottom: 16px; font-weight: 800; }
+.hero p { color: var(--texto-suave); font-size: 1.15rem; }
 
-/* Cartões */
+/* ---------- Cartões da página inicial ---------- */
 .cards {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
     gap: 20px;
 }
 .card {
-    background: var(--branco);
-    border: 1px solid var(--borda);
     border-radius: var(--raio);
-    padding: 24px;
-    transition: transform .2s, box-shadow .2s;
+    padding: 26px;
+    transition: transform .25s, background .25s;
 }
-.card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(108, 99, 255, .12); }
+.card:hover { transform: translateY(-4px); background: var(--vidro-forte); }
 .card h3 { margin-bottom: 8px; }
-.card p { color: var(--texto-suave); line-height: 1.5; }
+.card p { color: var(--texto-suave); line-height: 1.55; }
 
-/* Botões (vamos usar nas próximas etapas) */
+/* ---------- Botões ---------- */
+/* Principal: vidro claro, quase branco, com texto escuro (como o "GET PRO ACCESS") */
 .botao {
-    display: inline-block;
-    background: var(--roxo);
-    color: var(--branco);
-    padding: 10px 20px;
-    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 11px 22px;
+    border-radius: 99px;
     font-weight: 600;
-    border: none;
     cursor: pointer;
+    color: #24195E;
+    background: linear-gradient(180deg, rgba(255, 255, 255, .95), rgba(236, 230, 255, .80));
+    -webkit-backdrop-filter: var(--desfoque);
+    backdrop-filter: var(--desfoque);
+    border: 1px solid rgba(255, 255, 255, .7);
+    box-shadow: inset 0 1px 0 #fff, 0 6px 24px rgba(160, 120, 255, .35);
+    transition: transform .15s, box-shadow .2s;
 }
-.botao:hover { background: var(--roxo-escuro); }
-.topo nav a.botao { color: var(--branco); }
+.botao:hover { transform: translateY(-1px); box-shadow: inset 0 1px 0 #fff, 0 8px 30px rgba(180, 140, 255, .55); }
+.botao:active { transform: translateY(0) scale(.98); }
+.topo nav a.botao { color: #24195E; padding: 8px 18px; }
+.topo nav a.botao:hover { background: linear-gradient(180deg, #fff, rgba(236, 230, 255, .9)); }
+
 .botao-pequeno { padding: 8px 16px; font-size: .9rem; }
-.botao-grande { margin-top: 24px; padding: 14px 28px; font-size: 1.05rem; }
-.botao-cheio { width: 100%; padding: 12px; font-size: 1rem; margin-top: 8px; }
+.botao-grande { margin-top: 28px; padding: 15px 32px; font-size: 1.05rem; }
+.botao-cheio { width: 100%; padding: 13px; font-size: 1rem; margin-top: 8px; }
 
-.botao-contorno { background: transparent; color: var(--roxo); border: 2px solid var(--roxo); }
-.botao-contorno:hover { background: var(--roxo); color: var(--branco); }
-button { font: inherit; }
-
-/* Formulários (cadastro e login) */
-.caixa-form {
-    max-width: 420px;
-    margin: 0 auto;
-    background: var(--branco);
-    border: 1px solid var(--borda);
-    border-radius: var(--raio);
-    padding: 32px;
+/* Secundário: vidro transparente com texto branco */
+.botao-contorno {
+    color: var(--texto);
+    background: var(--vidro-forte);
+    border: 1px solid var(--vidro-borda);
+    box-shadow: inset 0 1px 0 var(--vidro-brilho);
 }
-.caixa-form h2 { font-size: 1.6rem; }
+.botao-contorno:hover { background: rgba(255, 255, 255, .22); box-shadow: inset 0 1px 0 var(--vidro-brilho); }
+
+/* ---------- Formulários ---------- */
+.caixa-form {
+    max-width: 440px;
+    margin: 0 auto;
+    border-radius: var(--raio);
+    padding: 34px;
+}
+.caixa-form h2 { font-size: 1.7rem; }
 .subtitulo { color: var(--texto-suave); margin: 4px 0 24px; }
 .caixa-form form { display: flex; flex-direction: column; }
-.caixa-form label { font-weight: 500; font-size: .9rem; margin-bottom: 6px; }
+.caixa-form label { font-weight: 500; font-size: .9rem; margin-bottom: 6px; color: var(--texto-suave); }
+
 .caixa-form input[type="text"],
 .caixa-form input[type="email"],
-.caixa-form input[type="password"] {
-    padding: 11px 12px;
-    border: 1px solid var(--borda);
-    border-radius: 8px;
-    font: inherit;
-    margin-bottom: 16px;
-}
+.caixa-form input[type="password"],
 .caixa-form input[type="date"],
 .caixa-form select,
 .caixa-form textarea {
-    padding: 11px 12px;
-    border: 1px solid var(--borda);
-    border-radius: 8px;
-    font: inherit;
-    margin-bottom: 16px;
-    background: var(--branco);
     width: 100%;
+    padding: 12px 14px;
+    margin-bottom: 16px;
+    font: inherit;
+    color: var(--texto);
+    background: rgba(255, 255, 255, .07);
+    border: 1px solid var(--vidro-borda);
+    border-radius: var(--raio-pequeno);
+    color-scheme: dark;   /* calendário e listas do navegador no modo escuro */
+    transition: background .2s, border-color .2s;
 }
+.caixa-form ::placeholder { color: rgba(220, 216, 255, .55); }
 .caixa-form textarea { resize: vertical; }
 .caixa-form input:focus,
 .caixa-form select:focus,
-.caixa-form textarea:focus { outline: 2px solid var(--roxo); border-color: transparent; }
+.caixa-form textarea:focus {
+    outline: none;
+    background: rgba(255, 255, 255, .12);
+    border-color: var(--acento);
+    box-shadow: 0 0 0 3px rgba(201, 184, 255, .25);
+}
+/* As opções de um <select> abrem numa lista do sistema: fundo escuro para dar para ler */
+select option { background: #1E1A5C; color: #fff; }
+
 .duas-colunas { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.check { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; font-weight: 400 !important; color: var(--texto) !important; }
+.check input { accent-color: var(--acento); width: 16px; height: 16px; }
 .form-excluir { margin-top: 16px; text-align: center; }
-
-/* Atividades no painel */
-.titulo-link { color: inherit; text-decoration: none; }
-.titulo-link:hover { color: var(--roxo); }
-.materia-link { display: flex; flex-direction: column; gap: 8px; color: inherit; text-decoration: none; }
-.materia-link:hover h3 { color: var(--roxo); }
-.voltar { margin-bottom: 12px; }
-.voltar a { display: inline-flex; align-items: center; gap: 4px; color: var(--texto-suave); font-weight: 500; text-decoration: none; }
-.voltar a:hover { color: var(--roxo); }
-.materia-cabecalho { border-left: 6px solid var(--cor); padding-left: 16px; }
-.materia-fixa { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; font-weight: 600; }
-select.etiqueta { border: none; cursor: pointer; font-family: inherit; appearance: none; text-align: center; }
-.check { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; font-weight: 400 !important; }
 .troca { text-align: center; margin-top: 20px; color: var(--texto-suave); }
-.troca a { color: var(--roxo); font-weight: 600; }
+.troca a { color: var(--acento); font-weight: 600; }
+.troca a:hover { text-decoration: underline; }
 
-/* Mensagens de aviso */
+/* ---------- Mensagens de aviso ---------- */
 .alerta {
-    max-width: 420px;
+    max-width: 440px;
     margin: 0 auto 20px;
-    padding: 12px 16px;
-    border-radius: 8px;
+    padding: 12px 18px;
+    border-radius: var(--raio-pequeno);
     font-weight: 500;
 }
-.alerta-erro { background: #FDECEC; color: #B42318; }
-.alerta-sucesso { background: #E8F7EE; color: #1E7B45; }
+.alerta-erro { background: rgba(255, 80, 100, .32); border-color: rgba(255, 150, 160, .55); color: #FFE3E6; }
+.alerta-sucesso { background: rgba(40, 200, 130, .30); border-color: rgba(120, 240, 170, .55); color: #E2FFF0; }
 
 .rodape {
     text-align: center;
-    padding: 20px;
+    padding: 24px;
     color: var(--texto-suave);
     font-size: .9rem;
 }
 
 /* ================= Painel ================= */
-.conteudo:has(.painel-topo) { max-width: 1100px; padding-top: 32px; }
+.conteudo:has(.painel-topo) { max-width: 1100px; padding-top: 36px; }
 
 .painel-topo {
     display: flex;
@@ -172,7 +279,7 @@ select.etiqueta { border: none; cursor: pointer; font-family: inherit; appearanc
     gap: 16px;
     margin-bottom: 28px;
 }
-.painel-topo h1 { font-size: 1.9rem; }
+.painel-topo h1 { font-size: clamp(1.7rem, 4vw, 2.3rem); font-weight: 800; }
 .frase { color: var(--texto-suave); margin-top: 4px; }
 .acoes { display: flex; gap: 10px; flex-wrap: wrap; }
 
@@ -184,21 +291,34 @@ select.etiqueta { border: none; cursor: pointer; font-family: inherit; appearanc
     margin-bottom: 24px;
 }
 .resumo-card {
-    background: var(--branco);
-    border: 1px solid var(--borda);
     border-radius: var(--raio);
-    padding: 20px;
+    padding: 22px;
     display: flex;
     flex-direction: column;
     gap: 4px;
 }
-.resumo-numero { font-size: 2rem; font-weight: 700; }
-.resumo-rotulo { color: var(--texto-suave); font-size: .92rem; }
-.resumo-card.destaque { background: var(--roxo); border-color: var(--roxo); }
-.resumo-card.destaque .resumo-numero,
-.resumo-card.destaque .resumo-rotulo { color: var(--branco); }
+.resumo-numero { font-family: "Plus Jakarta Sans", sans-serif; font-size: 2.2rem; font-weight: 800; }
+.resumo-rotulo { color: #E6E3FF; font-size: .95rem; font-weight: 500; display: flex; align-items: center; gap: 6px; }
+/* O cartão em destaque ganha um vidro tingido de roxo/azul */
+.resumo-card.destaque {
+    background: linear-gradient(135deg, rgba(130, 80, 255, .55), rgba(30, 80, 210, .55));
+    border-color: rgba(190, 200, 255, .45);
+}
+.resumo-card.destaque .resumo-rotulo { color: #fff; }
 
-/* Blocos (caixas brancas) */
+/* Tem prazo chegando: o vidro fica avermelhado (vermelho-rubi que vai puxando
+   para o roxo, para conversar com o resto do site) e ganha um brilho que "respira" */
+.resumo-card.destaque.urgente {
+    background: linear-gradient(135deg, rgba(235, 55, 95, .70), rgba(150, 45, 170, .55));
+    border-color: rgba(255, 170, 190, .65);
+    box-shadow: inset 0 1px 0 rgba(255, 220, 230, .6), 0 10px 40px rgba(235, 55, 95, .35);
+    animation: respirar 2.8s ease-in-out infinite;
+}
+@keyframes respirar {
+    50% { box-shadow: inset 0 1px 0 rgba(255, 220, 230, .6), 0 10px 50px rgba(235, 55, 95, .65); }
+}
+
+/* Blocos (as caixas de vidro grandes) */
 .painel-grade {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
@@ -206,8 +326,6 @@ select.etiqueta { border: none; cursor: pointer; font-family: inherit; appearanc
     margin-bottom: 20px;
 }
 .bloco {
-    background: var(--branco);
-    border: 1px solid var(--borda);
     border-radius: var(--raio);
     padding: 22px;
 }
@@ -220,7 +338,21 @@ select.etiqueta { border: none; cursor: pointer; font-family: inherit; appearanc
     margin-bottom: 16px;
 }
 .bloco-topo h2 { font-size: 1.1rem; }
-.link-botao { background: none; border: none; color: var(--roxo); font-weight: 600; cursor: pointer; }
+
+.link-botao {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: .9rem;
+    background: none;
+    border: none;
+    color: var(--acento);
+    font-weight: 600;
+    cursor: pointer;
+}
+.link-botao:hover { color: #fff; }
+.link-botao.perigo { color: var(--perigo); }
+.link-botao.perigo:hover { color: #FFB8B8; }
 
 /* Listas */
 .lista { list-style: none; display: flex; flex-direction: column; gap: 8px; }
@@ -228,70 +360,89 @@ select.etiqueta { border: none; cursor: pointer; font-family: inherit; appearanc
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 12px;
-    border-radius: 8px;
-    background: var(--fundo);
+    padding: 12px 14px;
+    border-radius: var(--raio-pequeno);
+    background: rgba(12, 14, 45, .30);
+    border: 1px solid rgba(255, 255, 255, .10);
+    transition: background .2s;
 }
-.bolinha { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+.lista-item:hover { background: rgba(255, 255, 255, .10); }
+.bolinha {
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, .12);
+}
 .lista-texto { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .lista-texto small { color: var(--texto-suave); }
-.data, .contador { font-weight: 600; color: var(--roxo); font-size: .9rem; }
+.data, .contador { font-weight: 700; color: var(--acento); font-size: .9rem; }
+.titulo-link:hover { color: var(--acento); }
 
 /* Barra de progresso do checklist */
-.barra { height: 6px; background: var(--borda); border-radius: 99px; margin-top: 6px; overflow: hidden; }
-.barra-cheia { height: 100%; background: var(--roxo); border-radius: 99px; }
+.barra { height: 6px; background: rgba(255, 255, 255, .12); border-radius: 99px; margin-top: 6px; overflow: hidden; }
+.barra-cheia { height: 100%; background: var(--gradiente-titulo); border-radius: 99px; }
 
-/* Etiquetas de status */
-.etiqueta { font-size: .8rem; font-weight: 600; padding: 4px 10px; border-radius: 99px; white-space: nowrap; }
-.etiqueta-pendente { background: #FFF4E0; color: #A35C00; }
-.etiqueta-em-andamento { background: #E6EEFF; color: #2F55C9; }
-.etiqueta-concluído { background: #E8F7EE; color: #1E7B45; }
+/* Etiquetas de status: vidro tingido */
+/* Fundo mais "cheio" e texto bem claro: a cor aparece, mas a leitura fica fácil */
+.etiqueta {
+    font-size: .82rem;
+    font-weight: 700;
+    padding: 5px 12px;
+    border-radius: 99px;
+    white-space: nowrap;
+    border: 1px solid transparent;
+}
+.etiqueta-pendente { background: rgba(240, 150, 30, .62); border-color: rgba(255, 210, 140, .65); color: #FFF7EA; }
+.etiqueta-em-andamento { background: rgba(50, 100, 230, .50); border-color: rgba(150, 185, 255, .55); color: #EAF0FF; }
+.etiqueta-concluído { background: rgba(20, 150, 90, .50); border-color: rgba(120, 235, 170, .55); color: #E4FFF0; }
+select.etiqueta { cursor: pointer; font-family: inherit; appearance: none; text-align: center; }
 
 /* Filtros */
 .filtros { display: flex; gap: 6px; flex-wrap: wrap; }
 .filtro {
-    background: var(--fundo);
-    border: 1px solid var(--borda);
+    background: rgba(255, 255, 255, .06);
+    border: 1px solid var(--vidro-borda);
     color: var(--texto-suave);
     padding: 6px 14px;
     border-radius: 99px;
     cursor: pointer;
     font-size: .88rem;
     font-weight: 500;
+    transition: background .2s, color .2s;
 }
-.filtro.ativo { background: var(--roxo); border-color: var(--roxo); color: var(--branco); }
+.filtro:hover { color: #fff; background: var(--vidro-forte); }
+.filtro.ativo { background: rgba(255, 255, 255, .9); border-color: #fff; color: #24195E; }
 
 /* Quando não tem nada ainda */
 .vazio {
     text-align: center;
     padding: 28px 12px;
     color: var(--texto-suave);
-    border: 2px dashed var(--borda);
-    border-radius: 8px;
+    border: 1.5px dashed rgba(255, 255, 255, .22);
+    border-radius: var(--raio-pequeno);
     line-height: 1.6;
 }
 .vazio .botao { margin-top: 12px; }
 
 /* Ícones (Lucide) */
 [data-lucide], .lucide { width: 1.1em; height: 1.1em; vertical-align: -0.18em; stroke-width: 2.2; }
-h2 .lucide, h3 .lucide { color: var(--roxo); margin-right: 4px; }
-.resumo-rotulo { display: flex; align-items: center; gap: 6px; }
+h2 .lucide, h3 .lucide { color: var(--acento); margin-right: 4px; }
 .icone-mini.lucide { width: .95em; height: .95em; }
 
 /* Ícone da conta no topo */
-.topo nav { display: flex; align-items: center; }
 .topo nav a.icone-conta {
-    width: 36px;
-    height: 36px;
+    width: 38px;
+    height: 38px;
+    padding: 0;
     border-radius: 50%;
-    background: #EEEDFF;
-    color: var(--roxo);
+    background: var(--vidro-forte);
+    border: 1px solid var(--vidro-borda);
+    color: #fff;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    transition: background .2s, color .2s;
 }
-.topo nav a.icone-conta:hover { background: var(--roxo); color: var(--branco); }
+.topo nav a.icone-conta:hover { background: rgba(255, 255, 255, .25); }
 .icone-conta .lucide { width: 18px; height: 18px; vertical-align: 0; }
 
 /* ================= Matérias ================= */
@@ -301,17 +452,22 @@ h2 .lucide, h3 .lucide { color: var(--roxo); margin-right: 4px; }
     gap: 18px;
 }
 .materia-card {
-    background: var(--branco);
-    border: 1px solid var(--borda);
-    border-top: 6px solid var(--cor);   /* faixa com a cor da matéria */
     border-radius: var(--raio);
     padding: 20px;
     display: flex;
     flex-direction: column;
     gap: 8px;
+    /* Um brilho com a cor da matéria no canto, por cima do vidro */
+    background:
+        radial-gradient(circle at 0% 0%, color-mix(in srgb, var(--cor) 45%, transparent), transparent 65%),
+        var(--vidro);
+    transition: transform .25s;
 }
+.materia-card:hover { transform: translateY(-4px); }
+.materia-link { display: flex; flex-direction: column; gap: 8px; }
+.materia-link:hover h3 { color: var(--acento); }
 .materia-topo { display: flex; justify-content: space-between; align-items: start; gap: 8px; }
-.materia-topo h3 { font-size: 1.1rem; }
+.materia-topo h3 { font-size: 1.15rem; }
 .materia-card p { color: var(--texto-suave); font-size: .92rem; }
 .materia-card p .lucide { margin-right: 4px; }
 .materia-acoes {
@@ -320,10 +476,23 @@ h2 .lucide, h3 .lucide { color: var(--roxo); margin-right: 4px; }
     gap: 14px;
     margin-top: 8px;
     padding-top: 12px;
-    border-top: 1px solid var(--borda);
+    border-top: 1px solid rgba(255, 255, 255, .12);
 }
-.link-botao { display: inline-flex; align-items: center; gap: 4px; font-size: .9rem; }
-.link-botao.perigo { color: #D64545; }
+
+/* Página de uma matéria */
+.voltar { margin-bottom: 12px; }
+.voltar a { display: inline-flex; align-items: center; gap: 4px; color: var(--texto-suave); font-weight: 500; }
+.voltar a:hover { color: #fff; }
+.materia-cabecalho { border-left: 5px solid var(--cor); padding-left: 16px; }
+.materia-fixa {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 16px;
+    padding: 10px 14px;
+    font-weight: 600;
+    border-radius: var(--raio-pequeno);
+    background: rgba(255, 255, 255, .07);
+    border: 1px solid var(--vidro-borda);
+}
 
 /* Escolha de cor no formulário */
 .cores { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
@@ -334,10 +503,17 @@ h2 .lucide, h3 .lucide { color: var(--roxo); margin-right: 4px; }
     height: 32px;
     border-radius: 50%;
     cursor: pointer;
-    border: 3px solid var(--branco);
-    box-shadow: 0 0 0 2px var(--borda);
-    transition: transform .15s;
+    border: 3px solid rgba(255, 255, 255, .25);
+    transition: transform .15s, border-color .15s;
 }
 .cor-opcao span:hover { transform: scale(1.1); }
-.cor-opcao input:checked + span { box-shadow: 0 0 0 3px var(--texto); }
-.cor-opcao input:focus-visible + span { outline: 2px solid var(--roxo); outline-offset: 3px; }
+.cor-opcao input:checked + span { border-color: #fff; box-shadow: 0 0 14px rgba(255, 255, 255, .5); }
+.cor-opcao input:focus-visible + span { outline: 2px solid var(--acento); outline-offset: 3px; }
+
+/* ================= Celular ================= */
+@media (max-width: 600px) {
+    .topo { border-radius: var(--raio); flex-direction: column; }
+    .conteudo { padding: 32px 16px; }
+    .duas-colunas { grid-template-columns: 1fr; gap: 0; }
+    .painel-grade { grid-template-columns: 1fr; }
+}

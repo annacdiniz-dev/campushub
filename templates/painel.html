@@ -25,7 +25,8 @@
         <span class="resumo-numero">{{ resumo.concluidas }}</span>
         <span class="resumo-rotulo"><i data-lucide="circle-check"></i> Concluídas</span>
     </div>
-    <div class="resumo-card destaque">
+    {# Se tiver algo vencendo em até 7 dias, o cartão ganha a classe "urgente" e fica avermelhado #}
+    <div class="resumo-card destaque {% if resumo.semana > 0 %}urgente{% endif %}">
         <span class="resumo-numero">{{ resumo.semana }}</span>
         <span class="resumo-rotulo"><i data-lucide="flame"></i> Vencem em 7 dias</span>
     </div>
