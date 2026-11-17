@@ -7,7 +7,8 @@
 <section class="painel-topo">
     <div>
         <h1>Olá, {{ current_user.nome.split()[0] }}!</h1>
-        <p class="frase">Seu eu do futuro agradece por estar aqui!</p>
+        {# A frase do CampusHub, numa "pílula" de vidro que flutua devagar #}
+        <p class="frase-destaque"><i data-lucide="sparkles"></i> Seu eu do futuro agradece por estar aqui!</p>
     </div>
 </section>
 
@@ -74,6 +75,10 @@
                 <button type="button" class="filtro" data-filtro="Pendente" aria-pressed="false">Pendentes</button>
                 <button type="button" class="filtro" data-filtro="Em andamento" aria-pressed="false">Em andamento</button>
                 <button type="button" class="filtro" data-filtro="Concluído" aria-pressed="false">Concluídas</button>
+                {# Selo de atrasadas: fica vermelho quando existe alguma #}
+                <button type="button" class="filtro filtro-atrasadas {{ 'tem-atrasadas' if resumo.atrasadas }}" data-filtro="atrasadas" aria-pressed="false">
+                    <i data-lucide="alarm-clock"></i> Atrasadas <span class="filtro-numero">{{ resumo.atrasadas }}</span>
+                </button>
             </div>
         </div>
 
@@ -121,7 +126,9 @@
             // 2) Mostra só as linhas com o status escolhido ("" = todas)
             let visiveis = 0;
             linhas.forEach((linha) => {
-                const mostrar = filtro === "" || linha.dataset.status === filtro;
+                const mostrar = filtro === ""
+                    || (filtro === "atrasadas" && linha.dataset.atrasada === "sim")
+                    || linha.dataset.status === filtro;
                 linha.hidden = !mostrar;
                 if (mostrar) visiveis++;
             });

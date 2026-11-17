@@ -1,11 +1,10 @@
 """Tudo sobre matérias: listar, criar, editar e excluir."""
 import re
-from datetime import date
 
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
-from models import STATUS, Materia, db
+from models import STATUS, Materia, db, ordenar_atividades
 from uploads import apagar_arquivos_da_atividade
 
 materias = Blueprint("materias", __name__, url_prefix="/materias")
@@ -47,12 +46,8 @@ def ver(materia_id):
     """Página de uma matéria: mostra as atividades dela."""
     materia = buscar_materia(materia_id)
 
-    # Ordem: não concluídas primeiro; dentro disso, a data mais próxima primeiro
-    # (atividades sem data vão para o fim). sorted() compara as tuplas item por item.
-    lista = sorted(
-        materia.atividades,
-        key=lambda a: (a.status == "Concluído", a.data_entrega is None, a.data_entrega or date.max),
-    )
+    # Mesma ordem inteligente do painel: atrasadas, próximas, sem data, concluídas
+    lista = ordenar_atividades(materia.atividades)
     return render_template("materia.html", materia=materia, atividades=lista, status_opcoes=STATUS)
 
 

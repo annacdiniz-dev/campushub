@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block titulo %}Esqueci minha senha · CampusHub{% endblock %}
+
+{% block conteudo %}
+<div class="caixa-form">
+    <h2>Esqueci minha senha</h2>
+    <p class="subtitulo">Digite o e-mail da sua conta. Vamos mandar um código de 6 números para você criar uma senha nova.</p>
+
+    <form method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <label for="email">E-mail</label>
+        <input type="email" id="email" name="email" required autofocus autocomplete="email">
+        <button type="submit" class="botao botao-cheio">Enviar código</button>
+    </form>
+
+    <p class="troca"><a href="{{ url_for('auth.login') }}">Voltar para o login</a></p>
+</div>
+{% endblock %}

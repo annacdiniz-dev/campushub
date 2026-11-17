@@ -1,0 +1,50 @@
+{# E-mails não carregam o style.css do site: todo o estilo vai "inline" (dentro de cada tag) #}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<body style="margin:0;padding:0;background:#0D0C1A;font-family:Arial,Helvetica,sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#0D0C1A;padding:32px 12px;">
+    <tr><td align="center">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:480px;background:#1A1930;border:1px solid #2E2C4A;border-radius:16px;">
+        <tr><td style="padding:28px 28px 8px;">
+          <p style="margin:0;font-size:20px;font-weight:bold;color:#FFFFFF;">Campus<span style="color:#B9A7FF;">Hub</span></p>
+        </td></tr>
+
+        <tr><td style="padding:8px 28px 0;">
+          <p style="margin:0 0 6px;font-size:16px;color:#FFFFFF;">Olá, {{ nome }}!</p>
+          <p style="margin:0 0 18px;font-size:15px;line-height:1.5;color:#B9B6CF;">
+            Você tem uma entrega <strong style="color:#FFFFFF;">{{ quando }}</strong> ({{ data }}):
+          </p>
+        </td></tr>
+
+        {# Cartão da atividade, com a faixa na cor da matéria #}
+        <tr><td style="padding:0 28px;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#232142;border-radius:12px;border-left:5px solid {{ materia.cor }};">
+            <tr><td style="padding:16px 18px;">
+              <p style="margin:0 0 4px;font-size:13px;font-weight:bold;color:{{ materia.cor }};">{{ materia.nome }}</p>
+              <p style="margin:0 0 4px;font-size:18px;font-weight:bold;color:#FFFFFF;">{{ atividade.titulo }}</p>
+              <p style="margin:0;font-size:13px;color:#B9B6CF;">{{ atividade.tipo }} · entrega {{ data }}</p>
+            </td></tr>
+          </table>
+        </td></tr>
+
+        {# A frase conforme o status: verde se já concluiu, rosa se ainda falta #}
+        <tr><td style="padding:18px 28px 0;">
+          <p style="margin:0;padding:12px 16px;border-radius:10px;font-size:16px;font-weight:bold;
+                    color:#FFFFFF;background:{{ '#1F7A50' if concluida else '#A8355F' }};">{{ mensagem }}</p>
+        </td></tr>
+
+        <tr><td align="center" style="padding:24px 28px 8px;">
+          <a href="{{ link }}" style="display:inline-block;padding:14px 28px;border-radius:99px;background:#FFFFFF;color:#24195E;font-size:15px;font-weight:bold;text-decoration:none;">Abrir no CampusHub</a>
+        </td></tr>
+
+        <tr><td style="padding:16px 28px 26px;">
+          <p style="margin:0;font-size:12px;line-height:1.5;color:#8C89A6;text-align:center;">
+            Você recebe este e-mail porque ativou os lembretes no CampusHub.<br>
+            <a href="{{ link_desligar }}" style="color:#B9A7FF;">Não quero mais receber lembretes</a>
+          </p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>

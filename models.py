@@ -4,6 +4,8 @@ from flask_login import UserMixin
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import check_password_hash, generate_password_hash
 
+from datas import hoje
+
 db = SQLAlchemy()
 
 # Valores permitidos (assim ninguém grava "pendnte" ou "urgentíssimo" no banco)
@@ -38,6 +40,13 @@ class Usuario(UserMixin, db.Model):  # UserMixin ensina o Flask-Login a lidar co
     # ID público de 4 caracteres que a pessoa passa para os amigos (ex.: "K7P2")
     codigo = db.Column(db.String(4), unique=True, nullable=True)
     criado_em = db.Column(db.DateTime, nullable=False, default=db.func.current_timestamp())
+    # Proteção do login: senhas erradas seguidas e até quando a conta fica bloqueada
+    tentativas_falhas = db.Column(db.Integer, nullable=False, default=0)
+    bloqueado_ate = db.Column(db.DateTime, nullable=True)
+    # LGPD: quando a pessoa aceitou a Política de Privacidade
+    aceitou_termos_em = db.Column(db.DateTime, nullable=True)
+    # Quer receber os lembretes de entrega por e-mail? (dá para desligar no perfil ou pelo link do e-mail)
+    lembretes_email = db.Column(db.Boolean, nullable=False, default=True)
 
     # Atalho: usuario.materias -> lista de matérias desse usuário
     materias = db.relationship("Materia", back_populates="usuario", cascade="all, delete-orphan")
@@ -93,6 +102,7 @@ class Atividade(db.Model):
     arquivos = db.relationship("Arquivo", back_populates="atividade", cascade="all, delete-orphan",
                                order_by="Arquivo.enviado_em")
     membros = db.relationship("MembroGrupo", back_populates="atividade", cascade="all, delete-orphan")
+    lembretes = db.relationship("LembreteEnviado", cascade="all, delete-orphan")
 
     __table_args__ = (
         db.CheckConstraint(f"tipo IN {tuple(TIPOS)}", name="ck_tipo"),
@@ -101,12 +111,32 @@ class Atividade(db.Model):
     )
 
     @property
-    def progresso(self):
-        """Porcentagem do checklist concluída (0 a 100)."""
-        if not self.checklist:
-            return 0
-        feitos = sum(1 for item in self.checklist if item.concluido)
-        return round(feitos / len(self.checklist) * 100)
+    def atrasada(self):
+        """Passou da data de entrega e ainda não foi concluída."""
+        return bool(self.data_entrega) and self.data_entrega < hoje() and self.status != "Concluído"
+
+
+def ordenar_atividades(atividades):
+    """Ordem "inteligente" das listas de atividades:
+
+    1. Atrasadas (a mais antiga primeiro — é a mais urgente)
+    2. Com data de entrega, da mais próxima para a mais distante
+    3. Sem data de entrega
+    4. Concluídas por último (a entregue mais recentemente primeiro)
+
+    sorted() compara as tuplas da "chave" item por item: primeiro o grupo (0 a 3), depois a data.
+    """
+    def chave(a):
+        if a.status == "Concluído":
+            # Número negativo da data: inverte a ordem (mais recente primeiro)
+            return (3, -(a.data_entrega.toordinal() if a.data_entrega else 0))
+        if a.atrasada:
+            return (0, a.data_entrega.toordinal())
+        if a.data_entrega:
+            return (1, a.data_entrega.toordinal())
+        return (2, 0)
+
+    return sorted(atividades, key=chave)
 
 
 class ChecklistItem(db.Model):
@@ -179,3 +209,55 @@ class MembroGrupo(db.Model):
     usuario = db.relationship("Usuario")
 
     __table_args__ = (db.UniqueConstraint("atividade_id", "usuario_id", name="uq_membro"),)
+
+
+class CodigoSenha(db.Model):
+    """Código de 6 números enviado por e-mail para redefinir a senha ("Esqueci minha senha")."""
+    __tablename__ = "codigos_senha"
+
+    id = db.Column(db.Integer, primary_key=True)
+    usuario_id = db.Column(db.Integer, db.ForeignKey("usuarios.id"), nullable=False)
+    # Guardamos o código "embaralhado", igual à senha: quem olhar o banco não vê o código
+    codigo_hash = db.Column(db.String(255), nullable=False)
+    criado_em = db.Column(db.DateTime, nullable=False)
+    expira_em = db.Column(db.DateTime, nullable=False)
+    tentativas = db.Column(db.Integer, nullable=False, default=0)  # códigos errados digitados
+    usado = db.Column(db.Boolean, nullable=False, default=False)
+
+    def confere(self, codigo):
+        return check_password_hash(self.codigo_hash, codigo)
+
+
+class LembreteEnviado(db.Model):
+    """Anota cada lembrete mandado, para ninguém receber o mesmo e-mail duas vezes.
+
+    A data de entrega faz parte da anotação: se a pessoa mudar a data, os lembretes
+    da data nova são outros (e chegam de novo, na hora certa).
+    """
+    __tablename__ = "lembretes_enviados"
+
+    id = db.Column(db.Integer, primary_key=True)
+    atividade_id = db.Column(db.Integer, db.ForeignKey("atividades.id", ondelete="CASCADE"), nullable=False)
+    tipo = db.Column(db.String(10), nullable=False)        # "7dias" ou "1dia"
+    data_entrega = db.Column(db.Date, nullable=False)
+    enviado_em = db.Column(db.DateTime, nullable=False, default=db.func.current_timestamp())
+
+    __table_args__ = (db.UniqueConstraint("atividade_id", "tipo", "data_entrega", name="uq_lembrete"),)
+
+
+class SolicitacaoAmizade(db.Model):
+    """Pedido de amizade esperando resposta: "de" quer ser colega de "para".
+
+    Quando "para" aceita, o pedido some e vira Amizade (nos dois sentidos).
+    """
+    __tablename__ = "solicitacoes_amizade"
+
+    id = db.Column(db.Integer, primary_key=True)
+    de_id = db.Column(db.Integer, db.ForeignKey("usuarios.id"), nullable=False)
+    para_id = db.Column(db.Integer, db.ForeignKey("usuarios.id"), nullable=False)
+    criado_em = db.Column(db.DateTime, nullable=False, default=db.func.current_timestamp())
+
+    de = db.relationship("Usuario", foreign_keys=[de_id])
+    para = db.relationship("Usuario", foreign_keys=[para_id])
+
+    __table_args__ = (db.UniqueConstraint("de_id", "para_id", name="uq_solicitacao"),)

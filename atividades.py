@@ -6,6 +6,7 @@ from datetime import date
 from flask import Blueprint, abort, flash, redirect, render_template, request, send_from_directory, url_for
 from flask_login import current_user, login_required
 
+from datas import hoje
 from materias import buscar_materia
 from models import PRIORIDADES, STATUS, TIPOS, Arquivo, Atividade, Materia, MembroGrupo, db
 from uploads import ABRE_NO_NAVEGADOR, EXTENSOES_PERMITIDAS, apagar_arquivos_da_atividade, pasta_da_atividade
@@ -175,7 +176,7 @@ def excluir(atividade_id):
 @login_required
 def ver(atividade_id):
     atividade = buscar_atividade(atividade_id)
-    dias = (atividade.data_entrega - date.today()).days if atividade.data_entrega else None
+    dias = (atividade.data_entrega - hoje()).days if atividade.data_entrega else None
     # Colegas que ainda NÃO estão no grupo: são as opções do botão "Adicionar colega"
     no_grupo = {m.usuario_id for m in atividade.membros}
     disponiveis = [c for c in current_user.lista_colegas() if c.id not in no_grupo]

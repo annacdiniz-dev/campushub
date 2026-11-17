@@ -1,24 +1,65 @@
 {% extends "base.html" %}
 
 {% block conteudo %}
-<section class="hero">
-    <h1>Bem-vindo(a) ao Campus<span>Hub</span>!</h1>
-    <p>Seu eu do futuro agradece. Organize sua vida acadêmica hoje.</p>
-    <a href="{{ url_for('auth.cadastro') }}" class="botao botao-grande">Começar agora, é grátis</a>
+<section class="hero-home">
+    {# ---------- Lado esquerdo: o texto ---------- #}
+    <div class="hero-texto">
+        <p class="frase-destaque"><i data-lucide="sparkles"></i> Seu eu do futuro agradece</p>
+        <h1>Sua vida acadêmica, <span>organizada</span> num lugar só.</h1>
+        <p class="hero-sub">Matérias, provas, trabalhos e prazos — com grupos com seus colegas
+            e tudo que você precisa para não perder nenhuma entrega.</p>
+        <div class="hero-acoes">
+            <a href="{{ url_for('auth.cadastro') }}" class="botao botao-grande">Começar agora, é grátis</a>
+            <a href="{{ url_for('auth.login') }}" class="botao botao-contorno botao-grande">Já tenho conta</a>
+        </div>
+        <p class="hero-nota"><i data-lucide="graduation-cap"></i> Feito por uma estudante, para estudantes.</p>
+    </div>
+
+    {# ---------- Lado direito: "maquete" 3D do painel ----------
+       São só divs de vidro inclinadas com CSS (perspective + rotate). aria-hidden: é decoração,
+       leitores de tela pulam essa parte. #}
+    <div class="cena-3d" aria-hidden="true">
+        <div class="cena-palco">
+            <div class="placa placa-fundo">
+                <div class="mini-titulo">Atividades</div>
+                <div class="mini-linha"><span class="bolinha" style="background:#F06595"></span><b>P1 de Cálculo</b><em class="mini-tag amarelo">Pendente</em></div>
+                <div class="mini-linha"><span class="bolinha" style="background:#339AF0"></span><b>Lista de Árvores</b><em class="mini-tag azul">Em andamento</em></div>
+                <div class="mini-linha"><span class="bolinha" style="background:#51CF66"></span><b>Projeto final</b><em class="mini-tag verde">Concluído</em></div>
+            </div>
+            <div class="placa placa-meio">
+                <div class="mini-titulo">Próximos prazos</div>
+                <div class="mini-linha"><span class="bolinha" style="background:#F06595"></span><b>P1 de Cálculo</b><em class="mini-tag vermelho">20/11</em></div>
+                <div class="mini-linha"><span class="bolinha" style="background:#FFD43B"></span><b>Trabalho em grupo</b><em class="mini-tag vermelho">24/11</em></div>
+            </div>
+            <div class="placa placa-frente">
+                <div class="mini-numero">3</div>
+                <div class="mini-rotulo"><i data-lucide="flame"></i> Vencem em 7 dias</div>
+            </div>
+            <div class="placa placa-email">
+                <i data-lucide="alarm-clock"></i>
+                <div><b>Entrega amanhã</b><small>Você precisa terminar!</small></div>
+            </div>
+        </div>
+    </div>
 </section>
 
+{# ---------- O que dá para fazer ---------- #}
 <section class="cards">
     <div class="card">
         <h3><i data-lucide="book-open"></i> Matérias</h3>
         <p>Todas as suas disciplinas em um só lugar, cada uma com sua cor.</p>
     </div>
     <div class="card">
-        <h3><i data-lucide="clipboard-list"></i> Atividades</h3>
-        <p>Provas, trabalhos e projetos com prazo, prioridade e status.</p>
+        <h3><i data-lucide="calendar-clock"></i> Prazos</h3>
+        <p>Provas, trabalhos e projetos em ordem de entrega — e as atrasadas em vermelho.</p>
     </div>
     <div class="card">
-        <h3><i data-lucide="list-checks"></i> Checklists</h3>
-        <p>Quebre cada entrega em passos e veja o progresso subir.</p>
+        <h3><i data-lucide="users"></i> Grupos</h3>
+        <p>Adicione colegas pelo ID e monte os grupos de cada trabalho.</p>
+    </div>
+    <div class="card">
+        <h3><i data-lucide="paperclip"></i> Arquivos</h3>
+        <p>Enunciados, slides e listas guardados junto de cada atividade.</p>
     </div>
 </section>
 {% endblock %}

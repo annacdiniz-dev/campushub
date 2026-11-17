@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block titulo %}Política de Privacidade · CampusHub{% endblock %}
+
+{% block conteudo %}
+<article class="texto-legal bloco">
+    <h1>Política de Privacidade</h1>
+    <p class="frase">Última atualização: novembro de 2026</p>
+
+    <p>O CampusHub é um projeto feito por uma estudante para ajudar estudantes a organizar a vida acadêmica.
+       Aqui explicamos, sem juridiquês, quais dados guardamos, para quê, e como você controla tudo isso,
+       conforme a Lei Geral de Proteção de Dados (LGPD — Lei nº 13.709/2018).</p>
+
+    <h2>Quais dados guardamos</h2>
+    <ul>
+        <li><strong>Conta:</strong> nome, e-mail, senha (guardada embaralhada — nem nós conseguimos ver qual é), foto de perfil (se você enviar) e o seu ID de 4 caracteres.</li>
+        <li><strong>O que você cadastra:</strong> matérias, atividades, descrições, datas, arquivos anexados e os colegas/grupos que você monta.</li>
+        <li><strong>Segurança:</strong> quantas vezes a senha foi digitada errado (para bloquear tentativas de invasão) e um cookie que mantém você logado.</li>
+    </ul>
+    <p>Não usamos cookies de propaganda nem ferramentas de rastreamento.</p>
+
+    <h2>Para que usamos</h2>
+    <ul>
+        <li>Fazer o site funcionar: mostrar suas matérias, atividades e prazos.</li>
+        <li>Mandar e-mails que você pediu, como o código de "esqueci minha senha" e lembretes de entrega.</li>
+        <li>Proteger sua conta.</li>
+    </ul>
+    <p>Nunca vendemos nem compartilhamos seus dados para fins comerciais.</p>
+
+    <h2>Quem mais vê seus dados</h2>
+    <ul>
+        <li><strong>Seus colegas:</strong> quem tem o seu ID consegue ver seu nome e sua foto para te adicionar.
+            Se você estiver no grupo de uma atividade de outra pessoa, ela vê seu nome nesse grupo.</li>
+        <li><strong>Serviços que fazem o site funcionar:</strong> o site fica hospedado no PythonAnywhere
+            (servidores fora do Brasil) e os e-mails são enviados pelo Gmail (Google).</li>
+    </ul>
+
+    <h2>Seus direitos (e como usar)</h2>
+    <ul>
+        <li><strong>Ver e baixar seus dados:</strong> em <em>Editar perfil → Baixar meus dados</em>.</li>
+        <li><strong>Corrigir:</strong> nome, e-mail e foto em <em>Editar perfil</em>; o resto direto nas telas do site.</li>
+        <li><strong>Apagar tudo:</strong> em <em>Editar perfil → Excluir conta</em>. Apagamos sua conta, suas matérias,
+            atividades, arquivos e amizades na hora — não fica nada guardado.</li>
+    </ul>
+
+    <h2>Contato</h2>
+    <p>Dúvidas ou pedidos sobre seus dados:
+        {% if config.CONTATO_EMAIL %}<a href="mailto:{{ config.CONTATO_EMAIL }}">{{ config.CONTATO_EMAIL }}</a>{% else %}pelo e-mail do CampusHub{% endif %}.</p>
+</article>
+{% endblock %}

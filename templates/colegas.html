@@ -13,7 +13,7 @@
     <h1>Colegas</h1>
     <p class="frase">Adicione seus amigos pelo ID para colocá-los nos trabalhos em grupo.</p>
 
-    {# ---------- Você + seu ID ---------- #}
+    {# ---------- 1) Você + seu ID ---------- #}
     <section class="bloco meu-id">
         {{ avatar(current_user, 'avatar-grande-medio') }}
         <div class="meu-id-texto">
@@ -25,20 +25,23 @@
         </button>
     </section>
 
-    {# ---------- Busca por ID ---------- #}
+    {# ---------- 2) Adicionar colega: busca por ID ---------- #}
     <section class="bloco">
         <h2><i data-lucide="search"></i> Adicionar colega</h2>
         {# GET: a busca vai para a URL (?busca=K7P2). Buscar não muda nada, só mostra. #}
         <form method="GET" action="{{ url_for('colegas.listar') }}" class="busca">
-            <input type="text" name="busca" value="{{ busca }}" placeholder="Digite o ID do seu amigo (ex.: K7P2)"
-                   maxlength="5" autocomplete="off" aria-label="ID do colega" autofocus>
+            {# autofocus só quando ainda não buscou: no celular, o teclado abrindo de novo cobria o resultado #}
+            <input type="text" name="busca" value="{{ busca }}" placeholder="ID do seu amigo (ex.: K7P2)"
+                   maxlength="6" autocomplete="off" autocapitalize="characters" spellcheck="false"
+                   aria-label="ID do colega" {% if not busca %}autofocus{% endif %}>
             <button type="submit" class="botao">Buscar</button>
         </form>
 
         {% if busca %}
-            <div class="resultado">
+            <div class="resultado" id="resultado">
             {% if not encontrado %}
-                <p class="vazio-pequeno">Nenhum usuário com o ID <strong>{{ busca }}</strong>. Confira se digitou certinho.</p>
+                <p class="aviso-busca"><i data-lucide="search-x"></i>
+                    <span>Nenhum usuário com o ID <strong>{{ busca }}</strong>. Confira com seu amigo se digitou certinho.</span></p>
             {% else %}
                 <div class="lista-item">
                     {{ avatar(encontrado) }}
@@ -46,13 +49,23 @@
                         <strong>{{ encontrado.nome }}</strong>
                         <small>ID {{ encontrado.codigo }}</small>
                     </div>
-                    {% if encontrado.id == current_user.id %}
+                    {% if situacao == 'eu' %}
                         <span class="etiqueta etiqueta-neutra">É você</span>
-                    {% elif current_user.eh_colega(encontrado.id) %}
+                    {% elif situacao == 'colega' %}
                         <span class="etiqueta etiqueta-concluído">Já é seu colega</span>
+                    {% elif situacao == 'enviada' %}
+                        <span class="etiqueta etiqueta-neutra">Aguardando resposta</span>
+                    {% elif situacao == 'recebida' %}
+                        {# A pessoa já tinha te pedido: mandar o pedido de volta = aceitar #}
+                        <form method="POST" action="{{ url_for('colegas.solicitar') }}">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <input type="hidden" name="codigo" value="{{ encontrado.codigo }}">
+                            <button type="submit" class="botao botao-pequeno"><i data-lucide="check"></i> Aceitar</button>
+                        </form>
                     {% else %}
-                        {# POST: adicionar MUDA o banco, então é formulário POST (nunca um link) #}
-                        <form method="POST" action="{{ url_for('colegas.adicionar') }}">
+                        {# POST: mandar o pedido MUDA o banco, então é formulário POST (nunca um link) #}
+                        <form method="POST" action="{{ url_for('colegas.solicitar') }}">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                             <input type="hidden" name="codigo" value="{{ encontrado.codigo }}">
                             <button type="submit" class="botao botao-pequeno"><i data-lucide="user-plus"></i> Adicionar</button>
                         </form>
@@ -63,7 +76,7 @@
         {% endif %}
     </section>
 
-    {# ---------- Lista de colegas ---------- #}
+    {# ---------- 3) Meus colegas ---------- #}
     <section class="bloco">
         <div class="bloco-topo">
             <h2><i data-lucide="users"></i> Meus colegas</h2>
@@ -80,13 +93,67 @@
                 </div>
                 <form method="POST" action="{{ url_for('colegas.remover', colega_id=colega.id) }}"
                       data-nome="{{ colega.nome }}" onsubmit="return confirm('Remover ' + this.dataset.nome + ' dos seus colegas?');">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <button type="submit" class="botao-icone perigo" aria-label="Remover {{ colega.nome }}"><i data-lucide="x"></i></button>
                 </form>
             </li>
             {% endfor %}
         </ul>
         {% else %}
-        <p class="vazio-pequeno">Você ainda não adicionou ninguém. Peça o ID de um amigo e busque acima.</p>
+        <p class="vazio-pequeno">Você ainda não tem colegas. Peça o ID de um amigo e busque acima.</p>
+        {% endif %}
+    </section>
+
+    {# ---------- 4) Solicitações ---------- #}
+    <section class="bloco {{ 'bloco-alerta' if recebidas }}" id="solicitacoes">
+        <div class="bloco-topo">
+            <h2><i data-lucide="mail-plus"></i> Solicitações</h2>
+            {% if recebidas %}<span class="selo-numero">{{ recebidas|length }}</span>{% endif %}
+        </div>
+
+        {% if recebidas %}
+        <ul class="lista">
+            {% for pedido in recebidas %}
+            <li class="lista-item">
+                {{ avatar(pedido.de) }}
+                <div class="lista-texto">
+                    <strong>{{ pedido.de.nome }}</strong>
+                    <small>ID {{ pedido.de.codigo }} · quer ser seu colega</small>
+                </div>
+                <div class="botoes-pedido">
+                    <form method="POST" action="{{ url_for('colegas.aceitar', solicitacao_id=pedido.id) }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="botao botao-pequeno"><i data-lucide="check"></i> Aceitar</button>
+                    </form>
+                    <form method="POST" action="{{ url_for('colegas.recusar', solicitacao_id=pedido.id) }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="botao-icone perigo" aria-label="Recusar {{ pedido.de.nome }}" title="Recusar"><i data-lucide="x"></i></button>
+                    </form>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p class="vazio-pequeno">Nenhuma solicitação para responder.</p>
+        {% endif %}
+
+        {% if enviadas %}
+        <h3 class="subtitulo-secao">Enviadas por você · aguardando resposta</h3>
+        <ul class="lista">
+            {% for pedido in enviadas %}
+            <li class="lista-item item-concluido">
+                {{ avatar(pedido.para) }}
+                <div class="lista-texto">
+                    <strong>{{ pedido.para.nome }}</strong>
+                    <small>ID {{ pedido.para.codigo }}</small>
+                </div>
+                <form method="POST" action="{{ url_for('colegas.cancelar', solicitacao_id=pedido.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="link-botao">Cancelar</button>
+                </form>
+            </li>
+            {% endfor %}
+        </ul>
         {% endif %}
     </section>
 </div>
@@ -94,6 +161,10 @@
 
 {% block scripts %}
 <script>
+    // Depois de buscar, rola a tela até o resultado (no celular ele podia ficar escondido)
+    const resultado = document.getElementById("resultado");
+    if (resultado) resultado.scrollIntoView({ behavior: "smooth", block: "center" });
+
     // Copiar o ID com um clique
     const botaoCopiar = document.getElementById("botao-copiar");
     botaoCopiar.addEventListener("click", async () => {

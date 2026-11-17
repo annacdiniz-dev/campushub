@@ -7,6 +7,7 @@
     <p class="subtitulo">{{ 'Ajuste o que precisar.' if editando else 'Prova, trabalho, projeto... o que vier.' }}</p>
 
     <form method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <label for="titulo">Título *</label>
         <input type="text" id="titulo" name="titulo" value="{{ atividade.titulo or '' }}"
                placeholder="Ex.: P1 de Cálculo" maxlength="100" required autofocus>
@@ -75,6 +76,7 @@
     {% if editando %}
     <form method="POST" action="{{ url_for('atividades.excluir', atividade_id=atividade_id, voltar=voltar) }}" class="form-excluir"
           onsubmit="return confirm('Excluir esta atividade?');">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <button type="submit" class="link-botao perigo"><i data-lucide="trash-2"></i> Excluir atividade</button>
     </form>
     {% endif %}

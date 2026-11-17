@@ -7,6 +7,7 @@
     <p class="subtitulo">{{ 'Ajuste o que precisar.' if editando else 'Só o nome é obrigatório.' }}</p>
 
     <form method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <label for="nome">Nome da matéria *</label>
         <input type="text" id="nome" name="nome" value="{{ materia.nome or '' }}"
                placeholder="Ex.: Estrutura de Dados II" maxlength="100" required autofocus>

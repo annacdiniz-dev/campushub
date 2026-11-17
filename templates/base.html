@@ -3,32 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0D0C1A">
     <title>{% block titulo %}CampusHub{% endblock %}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
-<body>
+<body class="{{ 'logado' if current_user.is_authenticated }}">
+    {% if current_user.is_authenticated %}
+        {# Qual página está aberta: usado para destacar o item certo nos menus.
+           request.endpoint = nome da rota (ex.: "painel"); request.blueprint = de qual arquivo ela é.
+           Telas de atividade contam como "Matérias", porque toda atividade mora dentro de uma matéria. #}
+        {% set no_painel = request.endpoint == 'painel' %}
+        {% set em_materias = request.blueprint in ('materias', 'atividades') %}
+        {% set em_colegas = request.blueprint == 'colegas' %}
+        {% set no_perfil = request.blueprint == 'perfil' %}
+        {# Os itens do menu, escritos uma vez só e usados no menu de cima (PC) e na barra de baixo (celular) #}
+        {% set itens_menu = [
+            ('painel', 'Painel', 'layout-dashboard', no_painel),
+            ('materias.listar', 'Matérias', 'book-open', em_materias),
+            ('colegas.listar', 'Colegas', 'users', em_colegas),
+        ] %}
+    {% endif %}
+
     <header class="topo">
         <a href="{{ url_for('home') }}" class="logo">Campus<span>Hub</span></a>
-        <nav>
+        <nav aria-label="Menu principal">
             {% if current_user.is_authenticated %}
-                {# Destaca a página atual. request.endpoint = nome da rota aberta agora (ex.: "painel");
-                   request.blueprint = de qual arquivo ela é (ex.: "materias").
-                   Telas de atividade contam como "Matérias", porque toda atividade mora dentro de uma matéria. #}
-                {% set no_painel = request.endpoint == 'painel' %}
-                {% set em_materias = request.blueprint in ('materias', 'atividades') %}
-                {% set em_colegas = request.blueprint == 'colegas' %}
-                {# Ícone + texto. No celular o texto some e fica só o ícone (o aria-label continua dizendo o nome) #}
-                <a href="{{ url_for('painel') }}" class="nav-link {{ 'ativo' if no_painel }}" aria-label="Painel" {% if no_painel %}aria-current="page"{% endif %}>
-                    <i data-lucide="layout-dashboard"></i><span class="nav-texto">Painel</span>
+                {# No computador: ícone + nome. No celular estes links somem e quem aparece é a barra de baixo. #}
+                {% for rota, nome, icone, ativo in itens_menu %}
+                <a href="{{ url_for(rota) }}" class="nav-link {{ 'ativo' if ativo }}" {% if ativo %}aria-current="page"{% endif %}>
+                    <i data-lucide="{{ icone }}"></i><span>{{ nome }}</span>
+                    {% if rota == 'colegas.listar' and solicitacoes_pendentes %}
+                        <span class="selo-menu" aria-label="{{ solicitacoes_pendentes }} solicitações">{{ solicitacoes_pendentes }}</span>
+                    {% endif %}
                 </a>
-                <a href="{{ url_for('materias.listar') }}" class="nav-link {{ 'ativo' if em_materias }}" aria-label="Matérias" {% if em_materias %}aria-current="page"{% endif %}>
-                    <i data-lucide="book-open"></i><span class="nav-texto">Matérias</span>
-                </a>
-                <a href="{{ url_for('colegas.listar') }}" class="nav-link {{ 'ativo' if em_colegas }}" aria-label="Colegas" {% if em_colegas %}aria-current="page"{% endif %}>
-                    <i data-lucide="users"></i><span class="nav-texto">Colegas</span>
-                </a>
+                {% endfor %}
+
                 {# Menu da conta: o botão abre/fecha a lista (o JavaScript lá embaixo cuida disso) #}
                 <div class="menu-conta">
                     <button type="button" class="icone-conta" id="botao-conta"
@@ -59,14 +70,64 @@
         {# Mensagens rápidas (ex.: "Conta criada!", "Senha incorreta") #}
         {% with mensagens = get_flashed_messages(with_categories=true) %}
             {% for categoria, mensagem in mensagens %}
-                <div class="alerta alerta-{{ categoria }}">{{ mensagem }}</div>
+                <div class="alerta alerta-{{ categoria }}" role="status">{{ mensagem }}</div>
             {% endfor %}
         {% endwith %}
 
         {% block conteudo %}{% endblock %}
     </main>
 
-    <footer class="rodape">CampusHub · feito para estudantes</footer>
+    <footer class="rodape">
+        CampusHub · feito para estudantes · <a href="{{ url_for('auth.privacidade') }}">Privacidade</a>
+    </footer>
+
+    {% if current_user.is_authenticated %}
+        {# ---------- Barra de baixo (só no celular): igual à de apps como Instagram e Nubank ---------- #}
+        <nav class="barra-inferior" aria-label="Menu principal">
+            {% for rota, nome, icone, ativo in itens_menu %}
+            <a href="{{ url_for(rota) }}" class="{{ 'ativo' if ativo }}" {% if ativo %}aria-current="page"{% endif %}>
+                <i data-lucide="{{ icone }}"></i><span>{{ nome }}</span>
+                {% if rota == 'colegas.listar' and solicitacoes_pendentes %}
+                    <span class="selo-menu" aria-label="{{ solicitacoes_pendentes }} solicitações">{{ solicitacoes_pendentes }}</span>
+                {% endif %}
+            </a>
+            {% endfor %}
+            <a href="{{ url_for('perfil.editar') }}" class="{{ 'ativo' if no_perfil }}" {% if no_perfil %}aria-current="page"{% endif %}>
+                <i data-lucide="circle-user-round"></i><span>Perfil</span>
+            </a>
+        </nav>
+
+        {# ---------- Botão flutuante "+": nova atividade de qualquer lugar ----------
+           Não aparece nas telas de formulário (lá a pessoa já está criando/editando algo). #}
+        {% if request.endpoint not in ('atividades.nova', 'atividades.editar', 'materias.nova', 'materias.editar') %}
+        <button type="button" class="botao-flutuante" id="botao-flutuante" aria-label="Nova atividade" title="Nova atividade">
+            <i data-lucide="plus"></i>
+        </button>
+
+        {# <dialog>: janela que abre por cima da página. O navegador já cuida de escurecer o fundo e fechar com Esc. #}
+        <dialog class="janela" id="janela-nova">
+            <div class="janela-topo">
+                <h2>Nova atividade</h2>
+                <button type="button" class="botao-icone" id="fechar-janela" aria-label="Fechar"><i data-lucide="x"></i></button>
+            </div>
+            {% if materias_menu %}
+                <p class="vazio-pequeno">Em qual matéria?</p>
+                <div class="janela-opcoes">
+                    {% for m in materias_menu %}
+                    <a href="{{ url_for('atividades.nova', materia_id=m.id) }}" class="opcao-colega">
+                        <span class="bolinha" style="background: {{ m.cor }}"></span> <span>{{ m.nome }}</span> <i data-lucide="chevron-right"></i>
+                    </a>
+                    {% endfor %}
+                </div>
+                <a href="{{ url_for('materias.nova') }}" class="link-botao margem-topo"><i data-lucide="plus"></i> Nova matéria</a>
+            {% else %}
+                <p class="vazio-pequeno">Para criar uma atividade, primeiro cadastre uma matéria.</p>
+                <a href="{{ url_for('materias.nova') }}" class="botao botao-pequeno margem-topo"><i data-lucide="plus"></i> Criar minha primeira matéria</a>
+            {% endif %}
+        </dialog>
+        {% endif %}
+    {% endif %}
+
     {# Biblioteca de ícones Lucide: troca cada <i data-lucide="..."> por um desenho #}
     <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
     <script>
@@ -94,6 +155,16 @@
             document.addEventListener("keydown", (e) => {
                 if (e.key === "Escape") abrirMenu(false);
             });
+        }
+
+        // ----- Botão flutuante "+" -----
+        const botaoFlutuante = document.getElementById("botao-flutuante");
+        if (botaoFlutuante) {
+            const janela = document.getElementById("janela-nova");
+            botaoFlutuante.addEventListener("click", () => janela.showModal());
+            document.getElementById("fechar-janela").addEventListener("click", () => janela.close());
+            // Clicou no fundo escuro (fora da caixa): fecha
+            janela.addEventListener("click", (e) => { if (e.target === janela) janela.close(); });
         }
     </script>
     {# Cada página pode colocar o seu próprio JavaScript aqui #}

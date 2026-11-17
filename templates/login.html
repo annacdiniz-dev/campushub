@@ -7,15 +7,19 @@
     <p class="subtitulo">Que bom te ver de novo!</p>
 
     <form method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <label for="email">E-mail</label>
-        <input type="email" id="email" name="email" value="{{ email or '' }}" required>
+        <input type="email" id="email" name="email" value="{{ email or '' }}" required autocomplete="email">
 
         <label for="senha">Senha</label>
-        <input type="password" id="senha" name="senha" required>
+        <input type="password" id="senha" name="senha" required autocomplete="current-password">
 
-        <label class="check">
-            <input type="checkbox" name="lembrar"> Manter conectado
-        </label>
+        <div class="linha-login">
+            <label class="check">
+                <input type="checkbox" name="lembrar"> Manter conectado
+            </label>
+            <a href="{{ url_for('auth.esqueci_senha') }}" class="link-esqueci">Esqueci minha senha</a>
+        </div>
 
         <button type="submit" class="botao botao-cheio">Entrar</button>
     </form>

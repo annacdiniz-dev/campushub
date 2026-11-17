@@ -26,6 +26,7 @@
     </div>
     <div class="acoes">
         <form method="POST" action="{{ url_for('atividades.mudar_status', atividade_id=atividade.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <input type="hidden" name="voltar" value="atividade">
             <select name="status" class="etiqueta etiqueta-grande etiqueta-{{ atividade.status|lower|replace(' ', '-') }}"
                     onchange="this.form.submit()" aria-label="Status">
@@ -58,6 +59,7 @@
         {# Sem descrição: o formulário já aparece. Com descrição: fica escondido até clicar em "Editar" #}
         <form method="POST" action="{{ url_for('atividades.salvar_descricao', atividade_id=atividade.id) }}"
               class="form-descricao" id="form-descricao" {% if atividade.descricao %}hidden{% endif %}>
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <textarea name="descricao" rows="8"
                       placeholder="O que precisa ser feito? Qual conteúdo cai na prova?&#10;Ex.: Capítulos 3 e 4 — integrais por partes e substituição trigonométrica.">{{ atividade.descricao or '' }}</textarea>
             <div class="form-descricao-acoes">
@@ -94,6 +96,7 @@
                     </div>
                     <form method="POST" action="{{ url_for('atividades.excluir_arquivo', atividade_id=atividade.id, arquivo_id=arq.id) }}"
                           data-nome="{{ arq.nome_original }}" onsubmit="return confirm('Remover ' + this.dataset.nome + '?');">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <button type="submit" class="botao-icone perigo" aria-label="Remover {{ arq.nome_original }}"><i data-lucide="x"></i></button>
                     </form>
                 </li>
@@ -106,6 +109,7 @@
             {# Escolheu o arquivo -> o formulário já se envia sozinho #}
             <form method="POST" action="{{ url_for('atividades.enviar_arquivo', atividade_id=atividade.id) }}"
                   enctype="multipart/form-data" class="form-arquivo">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <input type="file" name="arquivo" id="campo-arquivo" hidden
                        accept="{% for e in extensoes %}.{{ e }}{{ ',' if not loop.last }}{% endfor %}"
                        onchange="this.form.submit()">
@@ -144,6 +148,7 @@
                     </div>
                     <form method="POST" action="{{ url_for('atividades.remover_do_grupo', atividade_id=atividade.id, membro_id=membro.id) }}"
                           data-nome="{{ membro.usuario.nome }}" onsubmit="return confirm('Tirar ' + this.dataset.nome + ' do grupo?');">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <button type="submit" class="botao-icone perigo" aria-label="Tirar {{ membro.usuario.nome }} do grupo"><i data-lucide="x"></i></button>
                     </form>
                 </li>
@@ -159,6 +164,7 @@
                     {% if disponiveis %}
                         {% for colega in disponiveis %}
                         <form method="POST" action="{{ url_for('atividades.adicionar_ao_grupo', atividade_id=atividade.id) }}">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                             <input type="hidden" name="usuario_id" value="{{ colega.id }}">
                             <button type="submit" class="opcao-colega">
                                 {{ avatar(colega) }} <span>{{ colega.nome }}</span> <i data-lucide="plus"></i>

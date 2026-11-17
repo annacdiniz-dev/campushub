@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block titulo %}Lembretes por e-mail · CampusHub{% endblock %}
+
+{% block conteudo %}
+<div class="caixa-form">
+    {% if feito %}
+        <h2>Pronto!</h2>
+        <p class="subtitulo">Você não vai mais receber lembretes de entrega por e-mail.
+            Se mudar de ideia, é só ligar de novo em <em>Editar perfil</em>.</p>
+        <a href="{{ url_for('home') }}" class="botao botao-cheio">Ir para o CampusHub</a>
+    {% else %}
+        <h2>Parar os lembretes?</h2>
+        <p class="subtitulo">Você deixa de receber os e-mails de "entrega em 7 dias" e "entrega amanhã".
+            Os e-mails de segurança (como o código de "esqueci minha senha") continuam.</p>
+        <form method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="botao botao-cheio">Sim, parar os lembretes</button>
+        </form>
+        <p class="troca"><a href="{{ url_for('home') }}">Não, quero continuar recebendo</a></p>
+    {% endif %}
+</div>
+{% endblock %}

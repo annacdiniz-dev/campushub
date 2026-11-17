@@ -1,21 +1,25 @@
 {# Uma linha de atividade. Usado no painel e na página da matéria com {% include %}.
-   Precisa receber: "a" (a atividade), "status_opcoes" e "voltar" (para onde ir depois de mudar o status). #}
-{# data-status: guarda o status na própria linha, para o filtro do painel (JavaScript) ler #}
-<li class="lista-item" data-status="{{ a.status }}">
+   Precisa receber: "a" (a atividade), "status_opcoes" e "voltar" (para onde ir depois de mudar o status).
+   data-status / data-atrasada: guardam essas informações na própria linha, para o filtro do painel (JavaScript) ler. #}
+<li class="lista-item {{ 'item-atrasado' if a.atrasada }} {{ 'item-concluido' if a.status == 'Concluído' }}"
+    data-status="{{ a.status }}" data-atrasada="{{ 'sim' if a.atrasada else 'nao' }}">
     <span class="bolinha" style="background: {{ a.materia.cor }}"></span>
     <div class="lista-texto">
         <a href="{{ url_for('atividades.ver', atividade_id=a.id) }}" class="titulo-link"><strong>{{ a.titulo }}</strong></a>
         <small>
             {%- if voltar != 'materia' %}{{ a.materia.nome }} · {% endif -%}
-            {{ a.tipo }}{% if a.data_entrega %} · {{ a.data_entrega.strftime('%d/%m') }}{% endif %}{% if a.em_grupo %} · <i data-lucide="users" class="icone-mini"></i> Grupo{% endif %}
+            {{ a.tipo }}
+            {%- if a.data_entrega %} · <span class="{{ 'data-atrasada' if a.atrasada }}">{{ a.data_entrega.strftime('%d/%m') }}</span>{% endif %}
+            {%- if a.em_grupo %} · <i data-lucide="users" class="icone-mini"></i> Grupo{% endif %}
         </small>
-        <div class="barra"><div class="barra-cheia" style="width: {{ a.progresso }}%"></div></div>
     </div>
+    {% if a.atrasada %}<span class="selo-atrasada"><i data-lucide="alarm-clock"></i> Atrasada</span>{% endif %}
     {# Trocar o status: ao escolher outra opção, o formulário se envia sozinho #}
     <form method="POST" action="{{ url_for('atividades.mudar_status', atividade_id=a.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <input type="hidden" name="voltar" value="{{ voltar }}">
         <select name="status" class="etiqueta etiqueta-{{ a.status|lower|replace(' ', '-') }}"
-                onchange="this.form.submit()" aria-label="Status de {{ a.titulo }}">
+                onchange="this.form.submit()" aria-label="Status de {{ a.titulo }}" title="Clique para mudar o status">
             {% for s in status_opcoes %}
             <option {% if a.status == s %}selected{% endif %}>{{ s }}</option>
             {% endfor %}

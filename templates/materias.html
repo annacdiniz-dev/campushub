@@ -33,6 +33,7 @@
             {# Excluir usa POST (formulário), nunca um link comum: é mais seguro #}
             <form method="POST" action="{{ url_for('materias.excluir', materia_id=m.id) }}" data-nome="{{ m.nome }}"
                   onsubmit="return confirm('Excluir a matéria ' + this.dataset.nome + '? As atividades dela também serão apagadas.');">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <button type="submit" class="link-botao perigo"><i data-lucide="trash-2"></i> Excluir</button>
             </form>
         </div>

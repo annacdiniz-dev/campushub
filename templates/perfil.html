@@ -22,6 +22,7 @@
             <div class="perfil-foto-acoes">
                 {# enctype="multipart/form-data": obrigatório para o formulário conseguir enviar arquivos #}
                 <form method="POST" action="{{ url_for('perfil.trocar_foto') }}" enctype="multipart/form-data">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     {# O input de arquivo fica escondido; o <label> estilizado é que a pessoa clica #}
                     <input type="file" name="foto" id="campo-foto" accept="image/png, image/jpeg, image/webp, image/gif" hidden>
                     <label for="campo-foto" class="botao botao-contorno botao-pequeno"><i data-lucide="image-up"></i> Escolher imagem</label>
@@ -29,6 +30,7 @@
                 </form>
                 {% if current_user.foto %}
                 <form method="POST" action="{{ url_for('perfil.remover_foto') }}" onsubmit="return confirm('Remover sua foto?');">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <button type="submit" class="link-botao perigo"><i data-lucide="trash-2"></i> Remover foto</button>
                 </form>
                 {% endif %}
@@ -41,6 +43,7 @@
     <section class="bloco perfil-secao">
         <h2><i data-lucide="user-pen"></i> Editar nome</h2>
         <form method="POST" action="{{ url_for('perfil.trocar_nome') }}" class="perfil-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <label for="nome">Nome</label>
             <div class="perfil-linha">
                 <input type="text" id="nome" name="nome" value="{{ current_user.nome }}" maxlength="100" required>
@@ -53,6 +56,7 @@
     <section class="bloco perfil-secao">
         <h2><i data-lucide="mail"></i> Editar e-mail</h2>
         <form method="POST" action="{{ url_for('perfil.trocar_email') }}" class="perfil-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <label for="email">Novo e-mail</label>
             <input type="email" id="email" name="email" value="{{ current_user.email }}" required>
 
@@ -60,6 +64,46 @@
             <div class="perfil-linha">
                 <input type="password" id="senha" name="senha" required autocomplete="current-password">
                 <button type="submit" class="botao">Salvar</button>
+            </div>
+        </form>
+    </section>
+
+    {# ---------- Lembretes por e-mail ---------- #}
+    <section class="bloco perfil-secao">
+        <h2><i data-lucide="bell"></i> Lembretes por e-mail</h2>
+        {# O formulário se envia sozinho quando a chave muda #}
+        <form method="POST" action="{{ url_for('perfil.trocar_lembretes') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <label class="interruptor">
+                <input type="checkbox" name="lembretes" {% if current_user.lembretes_email %}checked{% endif %} onchange="this.form.submit()">
+                <span class="interruptor-trilho" aria-hidden="true"></span>
+                <span>Receber um e-mail <strong>7 dias</strong> e <strong>1 dia</strong> antes de cada entrega</span>
+            </label>
+        </form>
+    </section>
+
+    {# ---------- LGPD: seus dados ---------- #}
+    <section class="bloco perfil-secao">
+        <h2><i data-lucide="shield-check"></i> Seus dados</h2>
+        <p class="vazio-pequeno">Baixe um arquivo com tudo que o CampusHub guarda sobre você.
+            Saiba mais na <a href="{{ url_for('auth.privacidade') }}" class="link-destaque">Política de Privacidade</a>.</p>
+        <a href="{{ url_for('perfil.baixar_dados') }}" class="botao botao-contorno botao-pequeno margem-topo">
+            <i data-lucide="download"></i> Baixar meus dados
+        </a>
+    </section>
+
+    {# ---------- Zona de perigo: excluir conta ---------- #}
+    <section class="bloco perfil-secao zona-perigo">
+        <h2><i data-lucide="triangle-alert"></i> Excluir conta</h2>
+        <p class="vazio-pequeno">Apaga <strong>para sempre</strong> sua conta, matérias, atividades, arquivos e colegas.
+            Não dá para desfazer.</p>
+        <form method="POST" action="{{ url_for('perfil.excluir_conta') }}" class="perfil-form margem-topo"
+              onsubmit="return confirm('Tem certeza? Sua conta e TODOS os seus dados serão apagados para sempre.');">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <label for="senha-excluir">Digite sua senha para confirmar</label>
+            <div class="perfil-linha">
+                <input type="password" id="senha-excluir" name="senha" required autocomplete="current-password">
+                <button type="submit" class="botao botao-perigo">Excluir conta</button>
             </div>
         </form>
     </section>

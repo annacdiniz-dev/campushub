@@ -7,28 +7,30 @@
 /* Cores e medidas reaproveitadas no site todo */
 :root {
     /* Fundo */
-    --ceu-topo: #3F18C9;        /* roxo vibrante lá em cima */
-    --ceu-meio: #241A6E;
-    --ceu-base: #0E1530;        /* azul-marinho bem escuro embaixo */
+    /* Paleta "Grafite": fundo neutro e escuro (descansa a vista) e a cor só no que importa.
+       Regra de ouro: ~90% neutro, ~10% cor. */
+    --ceu-topo: #1A1930;        /* grafite levemente arroxeado */
+    --ceu-meio: #141327;
+    --ceu-base: #0D0C1A;        /* quase preto */
 
-    /* Vidro: um brilho branco por cima + um fundo levemente escuro.
-       O tom escuro deixa o texto branco mais fácil de ler sem perder a transparência. */
-    --vidro: linear-gradient(180deg, rgba(255, 255, 255, .11), rgba(255, 255, 255, .04)), rgba(14, 16, 52, .32);
-    --vidro-forte: linear-gradient(180deg, rgba(255, 255, 255, .17), rgba(255, 255, 255, .08)), rgba(14, 16, 52, .30);
-    --vidro-borda: rgba(255, 255, 255, .18);
-    --vidro-brilho: rgba(255, 255, 255, .35);   /* reflexo na borda de cima */
-    --desfoque: blur(22px) saturate(160%);
+    /* Vidro: um brilho branco bem sutil por cima de um fundo grafite */
+    --vidro: linear-gradient(180deg, rgba(255, 255, 255, .055), rgba(255, 255, 255, .025)), rgba(22, 21, 40, .6);
+    --vidro-forte: linear-gradient(180deg, rgba(255, 255, 255, .09), rgba(255, 255, 255, .04)), rgba(22, 21, 40, .6);
+    --vidro-borda: rgba(255, 255, 255, .09);
+    --vidro-brilho: rgba(255, 255, 255, .12);   /* reflexo na borda de cima */
+    --desfoque: blur(14px);     /* menos desfoque = mais leve no celular e menos "embaçado" */
 
     /* Texto e destaque */
     --texto: #FFFFFF;
-    --texto-suave: #D3D0F2;     /* sólido (não transparente): bem mais legível */
-    --acento: #CBBEFF;          /* lilás claro: links, ícones, números */
-    --gradiente-titulo: linear-gradient(100deg, #E2D6FF 0%, #A9B8FF 50%, #7FA2FF 100%);
+    --texto-suave: #B9B6CF;
+    --acento: #B9A7FF;          /* lilás: links, ícones, números */
+    --vermelho: #F0567A;
+    --gradiente-titulo: linear-gradient(100deg, #E6DDFF 0%, #B9A7FF 55%, #8F9BFF 100%);
     --perigo: #FFA8B0;
 
     --raio: 20px;
     --raio-pequeno: 14px;
-    --sombra: 0 10px 40px rgba(10, 5, 40, .35);
+    --sombra: 0 8px 28px rgba(0, 0, 0, .35);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -41,11 +43,10 @@ body {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
-    /* Fundo em camadas: brilho azul profundo + brilho roxo + o degradê do céu */
+    /* Fundo: grafite escuro com um único brilho roxo, bem suave, lá no alto */
     background:
-        radial-gradient(ellipse 70% 45% at 15% 35%, rgba(30, 70, 200, .55), transparent 70%),
-        radial-gradient(ellipse 60% 40% at 85% 10%, rgba(120, 80, 255, .50), transparent 70%),
-        linear-gradient(180deg, var(--ceu-topo) 0%, var(--ceu-meio) 45%, var(--ceu-base) 85%);
+        radial-gradient(ellipse 55% 35% at 12% 0%, rgba(124, 92, 255, .20), transparent 70%),
+        linear-gradient(180deg, var(--ceu-topo) 0%, var(--ceu-meio) 40%, var(--ceu-base) 75%);
     background-color: var(--ceu-base);
     background-attachment: fixed;
     position: relative;
@@ -60,7 +61,7 @@ body::after {
     z-index: -1;
     border-radius: 50%;
     filter: blur(80px);
-    opacity: .45;
+    opacity: .10;   /* quase apagadas: só um toque de cor, sem cansar a vista */
     pointer-events: none;
 }
 body::before {
@@ -80,7 +81,7 @@ body::after {
 }
 /* Quem pede "menos movimento" no sistema não vê a animação */
 @media (prefers-reduced-motion: reduce) {
-    body::before, body::after, .resumo-card.urgente, .menu-lista { animation: none; }
+    body::before, body::after, .menu-lista, .frase-destaque, .cena-palco, .placa { animation: none !important; }
     * { transition: none !important; }
 }
 
@@ -142,8 +143,8 @@ h1, h2, h3 { font-family: "Plus Jakarta Sans", "Inter", sans-serif; letter-spaci
 .topo nav a.ativo {
     color: #fff;
     font-weight: 600;
-    background: rgba(255, 255, 255, .18);
-    box-shadow: inset 0 1px 0 var(--vidro-brilho), inset 0 0 0 1px rgba(255, 255, 255, .14);
+    background: rgba(255, 255, 255, .10);
+    box-shadow: inset 0 1px 0 var(--vidro-brilho), inset 0 0 0 1px rgba(255, 255, 255, .08);
 }
 
 /* ---------- Área principal ---------- */
@@ -162,7 +163,7 @@ h1, h2, h3 { font-family: "Plus Jakarta Sans", "Inter", sans-serif; letter-spaci
 /* ---------- Cartões da página inicial ---------- */
 .cards {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
     gap: 20px;
 }
 .card {
@@ -310,23 +311,19 @@ select option { background: #1E1A5C; color: #fff; }
 }
 .resumo-numero { font-family: "Plus Jakarta Sans", sans-serif; font-size: 2.2rem; font-weight: 800; }
 .resumo-rotulo { color: #E6E3FF; font-size: .95rem; font-weight: 500; display: flex; align-items: center; gap: 6px; }
-/* O cartão em destaque ganha um vidro tingido de roxo/azul */
+/* O cartão em destaque ganha um vidro tingido de roxo (a única "cor forte" do topo) */
 .resumo-card.destaque {
-    background: linear-gradient(135deg, rgba(130, 80, 255, .55), rgba(30, 80, 210, .55));
-    border-color: rgba(190, 200, 255, .45);
+    background: linear-gradient(135deg, rgba(124, 92, 255, .38), rgba(90, 80, 210, .28));
+    border-color: rgba(185, 167, 255, .35);
 }
 .resumo-card.destaque .resumo-rotulo { color: #fff; }
 
-/* Tem prazo chegando: o vidro fica avermelhado (vermelho-rubi que vai puxando
-   para o roxo, para conversar com o resto do site) e ganha um brilho que "respira" */
+/* Tem prazo chegando: o vidro fica avermelhado (vermelho-rubi puxando para o roxo).
+   Sem piscar: chama atenção pela cor, sem movimento cansando a vista. */
 .resumo-card.destaque.urgente {
-    background: linear-gradient(135deg, rgba(235, 55, 95, .70), rgba(150, 45, 170, .55));
-    border-color: rgba(255, 170, 190, .65);
-    box-shadow: inset 0 1px 0 rgba(255, 220, 230, .6), 0 10px 40px rgba(235, 55, 95, .35);
-    animation: respirar 2.8s ease-in-out infinite;
-}
-@keyframes respirar {
-    50% { box-shadow: inset 0 1px 0 rgba(255, 220, 230, .6), 0 10px 50px rgba(235, 55, 95, .65); }
+    background: linear-gradient(135deg, rgba(220, 60, 100, .50), rgba(150, 50, 150, .35));
+    border-color: rgba(255, 150, 175, .45);
+    box-shadow: inset 0 1px 0 rgba(255, 220, 230, .25), 0 10px 36px rgba(220, 60, 100, .22);
 }
 
 /* Corpo do painel: prazos (estreita, à esquerda) + atividades (larga) */
@@ -379,11 +376,26 @@ select option { background: #1E1A5C; color: #fff; }
     gap: 12px;
     padding: 12px 14px;
     border-radius: var(--raio-pequeno);
-    background: rgba(12, 14, 45, .30);
-    border: 1px solid rgba(255, 255, 255, .10);
+    background: rgba(255, 255, 255, .035);
+    border: 1px solid rgba(255, 255, 255, .06);
     transition: background .2s;
 }
-.lista-item:hover { background: rgba(255, 255, 255, .10); }
+.lista-item:hover { background: rgba(255, 255, 255, .07); }
+/* Atrasada: faixa vermelha na esquerda. Concluída: mais apagada (já saiu do caminho) */
+.item-atrasado { border-left: 3px solid var(--vermelho); background: rgba(240, 86, 122, .07); }
+.item-concluido .lista-texto { opacity: .6; }
+.data-atrasada { color: #FF9DB3; font-weight: 700; }
+.selo-atrasada {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: .75rem; font-weight: 700;
+    padding: 4px 9px;
+    border-radius: 99px;
+    color: #FFE3EA;
+    background: rgba(240, 86, 122, .28);
+    border: 1px solid rgba(255, 150, 175, .45);
+    white-space: nowrap;
+}
+.selo-atrasada .lucide { width: 13px; height: 13px; }
 .bolinha {
     width: 12px; height: 12px;
     border-radius: 50%;
@@ -394,10 +406,6 @@ select option { background: #1E1A5C; color: #fff; }
 .lista-texto small { color: var(--texto-suave); }
 .data, .contador { font-weight: 700; color: var(--acento); font-size: .9rem; }
 .titulo-link:hover { color: var(--acento); }
-
-/* Barra de progresso do checklist */
-.barra { height: 6px; background: rgba(255, 255, 255, .12); border-radius: 99px; margin-top: 6px; overflow: hidden; }
-.barra-cheia { height: 100%; background: var(--gradiente-titulo); border-radius: 99px; }
 
 /* Etiquetas de status: vidro tingido */
 /* Fundo mais "cheio" e texto bem claro: a cor aparece, mas a leitura fica fácil */
@@ -417,9 +425,25 @@ select option { background: #1E1A5C; color: #fff; }
     border-color: rgba(255, 170, 190, .70);
     color: #FFF0F3;
 }
-.etiqueta-em-andamento { background: rgba(50, 100, 230, .50); border-color: rgba(150, 185, 255, .55); color: #EAF0FF; }
+.etiqueta-em-andamento { background: rgba(70, 110, 230, .38); border-color: rgba(150, 185, 255, .55); color: #EAF0FF; }
 .etiqueta-concluído { background: rgba(20, 150, 90, .50); border-color: rgba(120, 235, 170, .55); color: #E4FFF0; }
-select.etiqueta { cursor: pointer; font-family: inherit; appearance: none; text-align: center; }
+/* Status que dá para clicar: setinha ▾ desenhada à direita (um SVG dentro do CSS) + reação ao passar o mouse */
+select.etiqueta {
+    cursor: pointer;
+    font-family: inherit;
+    appearance: none;
+    text-align: center;
+    padding-right: 26px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 9px center;
+    transition: filter .15s, transform .15s, box-shadow .15s;
+}
+/* A setinha precisa de cor escura no amarelo e clara nos outros */
+select.etiqueta-pendente { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%233A2A00' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E"); }
+select.etiqueta-em-andamento, select.etiqueta-concluído { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E"); }
+select.etiqueta:hover { filter: brightness(1.12); transform: translateY(-1px); box-shadow: 0 4px 14px rgba(0, 0, 0, .3); }
+select.etiqueta:focus-visible { outline: 2px solid var(--acento); outline-offset: 2px; }
 
 /* Filtros */
 .filtros { display: flex; gap: 6px; flex-wrap: wrap; }
@@ -771,7 +795,8 @@ h2 .lucide, h3 .lucide { color: var(--acento); margin-right: 4px; }
     cursor: pointer;
     transition: background .2s;
 }
-.opcao-colega span:not(.avatar) { flex: 1; }
+/* O nome ocupa o espaço que sobrar (mas a bolinha e o avatar mantêm o tamanho deles) */
+.opcao-colega span:not(.avatar):not(.bolinha) { flex: 1; }
 .opcao-colega:hover { background: rgba(255, 255, 255, .12); }
 .opcao-colega > .lucide { color: var(--acento); }
 .link-destaque { color: var(--acento); font-weight: 600; text-decoration: underline; }
@@ -840,6 +865,280 @@ h2 .lucide, h3 .lucide { color: var(--acento); margin-right: 4px; }
 .etiqueta-neutra { background: rgba(255, 255, 255, .12); border-color: rgba(255, 255, 255, .2); color: var(--texto); }
 .menu-nome small { display: block; font-weight: 600; font-size: .78rem; color: var(--acento); letter-spacing: .06em; margin-top: 2px; }
 
+/* ================= Frase em destaque ("Seu eu do futuro agradece") ================= */
+.frase-destaque {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+    padding: 8px 16px;
+    border-radius: 99px;
+    font-weight: 600;
+    color: #fff;
+    background: linear-gradient(135deg, rgba(124, 92, 255, .30), rgba(240, 120, 190, .18));
+    border: 1px solid rgba(200, 180, 255, .30);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .15), 0 8px 26px rgba(124, 92, 255, .22);
+    animation: flutuar-leve 5s ease-in-out infinite;
+}
+.frase-destaque .lucide { color: #FFD9F0; }
+/* Sobe e desce bem devagar (6px), como se estivesse boiando */
+@keyframes flutuar-leve {
+    50% { transform: translateY(-6px); }
+}
+
+/* ================= Selo/filtro "Atrasadas" ================= */
+.filtro-atrasadas { display: inline-flex; align-items: center; gap: 6px; }
+.filtro-atrasadas .lucide { width: 14px; height: 14px; }
+.filtro-numero {
+    min-width: 20px; padding: 0 6px;
+    border-radius: 99px;
+    font-size: .78rem; font-weight: 700;
+    background: rgba(255, 255, 255, .10);
+}
+/* Quando existe alguma atrasada: o selo fica vermelho */
+.filtro-atrasadas.tem-atrasadas {
+    color: #FFE3EA;
+    background: rgba(240, 86, 122, .22);
+    border-color: rgba(255, 150, 175, .55);
+}
+.filtro-atrasadas.tem-atrasadas .filtro-numero { background: var(--vermelho); color: #fff; }
+.filtro-atrasadas.ativo { background: var(--vermelho); border-color: var(--vermelho); color: #fff; }
+
+/* ================= Barra de baixo (celular) ================= */
+.barra-inferior {
+    display: none;   /* só aparece no celular (ver lá embaixo) */
+    position: fixed;
+    left: 10px; right: 10px;
+    bottom: calc(10px + env(safe-area-inset-bottom));  /* respeita a "barrinha" do iPhone */
+    z-index: 30;
+    justify-content: space-around;
+    padding: 6px;
+    border-radius: 22px;
+    background: rgba(22, 21, 40, .88);
+    -webkit-backdrop-filter: var(--desfoque);
+    backdrop-filter: var(--desfoque);
+    border: 1px solid var(--vidro-borda);
+    box-shadow: inset 0 1px 0 var(--vidro-brilho), 0 10px 30px rgba(0, 0, 0, .45);
+}
+.barra-inferior a {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    padding: 7px 4px;
+    border-radius: 16px;
+    font-size: .72rem;
+    font-weight: 600;
+    color: var(--texto-suave);
+}
+.barra-inferior a .lucide { width: 21px; height: 21px; }
+.barra-inferior a.ativo { color: #fff; background: rgba(185, 167, 255, .16); }
+.barra-inferior a.ativo .lucide { color: var(--acento); }
+
+/* ================= Botão flutuante "+" ================= */
+.botao-flutuante {
+    position: fixed;
+    right: 28px;
+    bottom: 28px;
+    z-index: 31;
+    width: 58px; height: 58px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    border: 1px solid rgba(255, 255, 255, .6);
+    color: #24195E;
+    background: linear-gradient(180deg, #fff, #E4DCFF);
+    box-shadow: 0 10px 30px rgba(124, 92, 255, .45), inset 0 1px 0 #fff;
+    cursor: pointer;
+    transition: transform .2s, box-shadow .2s;
+}
+.botao-flutuante .lucide { width: 26px; height: 26px; stroke-width: 2.6; }
+.botao-flutuante:hover { transform: scale(1.07) rotate(90deg); box-shadow: 0 14px 36px rgba(124, 92, 255, .6), inset 0 1px 0 #fff; }
+.botao-flutuante:focus-visible { outline: 3px solid var(--acento); outline-offset: 3px; }
+
+/* Janela (<dialog>) que abre pelo "+" */
+.janela {
+    margin: auto;
+    width: min(420px, calc(100% - 32px));
+    padding: 22px;
+    border-radius: var(--raio);
+    color: var(--texto);
+    background: linear-gradient(180deg, rgba(255, 255, 255, .06), rgba(255, 255, 255, .02)), #1A1930;
+    border: 1px solid var(--vidro-borda);
+    box-shadow: inset 0 1px 0 var(--vidro-brilho), 0 24px 60px rgba(0, 0, 0, .6);
+}
+.janela[open] { animation: aparecer .18s ease-out; }
+/* ::backdrop = o fundo escurecido atrás da janela */
+.janela::backdrop { background: rgba(5, 4, 15, .65); backdrop-filter: blur(3px); }
+.janela-topo { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.janela-topo h2 { font-size: 1.2rem; }
+.janela-opcoes { display: flex; flex-direction: column; gap: 2px; margin-top: 10px; max-height: 50vh; overflow-y: auto; }
+.janela-opcoes .opcao-colega { color: var(--texto); }
+.margem-topo { margin-top: 14px; }
+
+/* ================= Página inicial (com a cena 3D) ================= */
+.conteudo:has(.hero-home) { max-width: 1140px; }
+.hero-home {
+    display: grid;
+    grid-template-columns: 1.05fr 1fr;
+    align-items: center;
+    gap: 32px;
+    margin: 20px 0 56px;
+}
+.hero-texto .frase-destaque { margin: 0 0 18px; }
+.hero-texto h1 { font-size: clamp(2.1rem, 5vw, 3.4rem); line-height: 1.08; font-weight: 800; margin-bottom: 16px; }
+.hero-texto h1 span {
+    background: var(--gradiente-titulo);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+.hero-sub { color: var(--texto-suave); font-size: 1.1rem; line-height: 1.6; max-width: 520px; }
+.hero-acoes { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 28px; }
+.hero-acoes .botao-grande { margin-top: 0; }
+.hero-nota { display: flex; align-items: center; gap: 8px; margin-top: 22px; color: var(--texto-suave); font-size: .92rem; }
+
+/* A cena: "perspective" cria a profundidade; as placas são giradas em 3D dentro dela */
+.cena-3d { height: 440px; perspective: 1100px; position: relative; }
+.cena-palco {
+    position: absolute; inset: 0;
+    transform-style: preserve-3d;              /* os filhos continuam em 3D */
+    transform: rotateX(14deg) rotateY(-24deg); /* inclina o "palco" inteiro */
+    animation: palco-balanca 9s ease-in-out infinite;
+}
+@keyframes palco-balanca {
+    50% { transform: rotateX(10deg) rotateY(-16deg) translateY(-8px); }
+}
+.placa {
+    position: absolute;
+    padding: 18px;
+    border-radius: 18px;
+    /* Quase sólido: uma placa na frente da outra precisa "tampar" o que está atrás */
+    background: linear-gradient(180deg, rgba(255, 255, 255, .09), rgba(255, 255, 255, .03)), rgba(26, 25, 48, .96);
+    border: 1px solid rgba(255, 255, 255, .12);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .16), 0 30px 60px rgba(0, 0, 0, .45);
+    animation: placa-boia 6s ease-in-out infinite;
+}
+/* translateZ = distância "para fora da tela": quanto maior, mais na frente */
+.placa-fundo  { width: 330px; top: 30px;  left: 70px;  transform: translateZ(-60px); }
+.placa-meio   { width: 290px; top: 200px; left: 10px;  transform: translateZ(40px); animation-delay: -2s; }
+.placa-frente { width: 200px; top: 135px; right: -20px; transform: translateZ(120px); animation-delay: -4s;
+                background: linear-gradient(135deg, #B23A68, #6E2E86); border-color: rgba(255, 160, 185, .5); }
+.placa-email  { top: 330px; right: 30px; transform: translateZ(170px); animation-delay: -1s;
+                display: flex; align-items: center; gap: 12px; padding: 14px 16px; }
+@keyframes placa-boia {
+    50% { margin-top: -10px; }
+}
+.mini-titulo { font-weight: 700; font-size: .85rem; color: var(--texto-suave); margin-bottom: 10px; }
+.mini-linha {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 10px; margin-top: 6px;
+    border-radius: 10px;
+    font-size: .85rem;
+    background: rgba(255, 255, 255, .05);
+}
+.mini-linha b { flex: 1; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mini-tag { font-style: normal; font-size: .68rem; font-weight: 700; padding: 3px 8px; border-radius: 99px; color: #fff; }
+.mini-tag.amarelo { background: rgba(250, 205, 50, .9); color: #3A2A00; }
+.mini-tag.azul { background: rgba(70, 110, 230, .6); }
+.mini-tag.verde { background: rgba(20, 150, 90, .7); }
+.mini-tag.vermelho { background: rgba(220, 60, 100, .8); }
+.mini-numero { font-family: "Plus Jakarta Sans", sans-serif; font-size: 2.6rem; font-weight: 800; line-height: 1; }
+.mini-rotulo { display: flex; align-items: center; gap: 6px; margin-top: 6px; font-weight: 600; font-size: .9rem; }
+.placa-email .lucide { width: 26px; height: 26px; color: var(--acento); }
+.placa-email b { display: block; font-size: .9rem; }
+.placa-email small { color: var(--texto-suave); font-size: .8rem; }
+
+/* ================= Login, cadastro e senha ================= */
+.linha-login { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+.linha-login .check { margin-bottom: 0; }
+.link-esqueci { color: var(--acento); font-weight: 600; font-size: .9rem; }
+.link-esqueci:hover { text-decoration: underline; }
+.check-termos { align-items: flex-start; line-height: 1.4; }
+.check-termos input { margin-top: 2px; flex-shrink: 0; }
+.check-termos a { color: var(--acento); font-weight: 600; text-decoration: underline; }
+.caixa-form label .dica { font-weight: 400; }
+.campo-codigo { font-size: 1.5rem !important; letter-spacing: .4em; text-align: center; font-weight: 700; }
+
+/* ================= Colegas: busca e solicitações ================= */
+/* Aviso de "não achei": em destaque, para ninguém achar que "não aconteceu nada" */
+.aviso-busca {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 14px;
+    border-radius: var(--raio-pequeno);
+    color: #FFE3EA;
+    background: rgba(240, 86, 122, .14);
+    border: 1px solid rgba(255, 150, 175, .35);
+    line-height: 1.45;
+}
+.aviso-busca .lucide { flex-shrink: 0; color: #FF9DB3; }
+.resultado .lista-item { border-color: rgba(185, 167, 255, .35); background: rgba(124, 92, 255, .10); }
+/* Bloco de solicitações com pedido esperando: borda lilás para chamar atenção */
+.bloco-alerta { border-color: rgba(185, 167, 255, .45); }
+.botoes-pedido { display: flex; align-items: center; gap: 6px; }
+.subtitulo-secao { font-size: .85rem; color: var(--texto-suave); margin: 18px 0 10px; font-weight: 600; }
+/* Bolinha vermelha com número (no bloco e no menu) */
+.selo-numero,
+.selo-menu {
+    min-width: 20px; height: 20px;
+    padding: 0 6px;
+    display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 99px;
+    font-size: .72rem; font-weight: 800;
+    color: #fff;
+    background: var(--vermelho);
+    box-shadow: 0 0 0 2px rgba(13, 12, 26, .9);
+}
+.topo nav a.nav-link { position: relative; }
+.barra-inferior a { position: relative; }
+.barra-inferior .selo-menu { position: absolute; top: 2px; left: calc(50% + 6px); }
+
+/* ================= Interruptor liga/desliga (lembretes) =================
+   É um checkbox de verdade, só que escondido; o que aparece é o "trilho" desenhado ao lado. */
+.interruptor { display: flex; align-items: center; gap: 14px; cursor: pointer; line-height: 1.4; }
+.interruptor input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.interruptor-trilho {
+    position: relative;
+    flex-shrink: 0;
+    width: 48px; height: 28px;
+    border-radius: 99px;
+    background: rgba(255, 255, 255, .14);
+    border: 1px solid var(--vidro-borda);
+    transition: background .2s;
+}
+/* A bolinha que desliza */
+.interruptor-trilho::after {
+    content: "";
+    position: absolute;
+    top: 3px; left: 3px;
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, .35);
+    transition: transform .2s;
+}
+.interruptor input:checked + .interruptor-trilho { background: linear-gradient(135deg, #7C5CFF, #5B6BE8); }
+.interruptor input:checked + .interruptor-trilho::after { transform: translateX(20px); }
+.interruptor input:focus-visible + .interruptor-trilho { outline: 2px solid var(--acento); outline-offset: 3px; }
+
+/* ================= Política de privacidade e zona de perigo ================= */
+.texto-legal { max-width: 760px; margin: 0 auto; padding: 32px 36px; line-height: 1.7; }
+.texto-legal h1 { font-size: clamp(1.7rem, 4vw, 2.2rem); }
+.texto-legal h2 { font-size: 1.15rem; margin: 26px 0 8px; }
+.texto-legal p, .texto-legal li { color: #DCDAEB; }
+.texto-legal ul { padding-left: 20px; display: flex; flex-direction: column; gap: 6px; }
+.texto-legal a { color: var(--acento); text-decoration: underline; }
+.zona-perigo { border-color: rgba(240, 86, 122, .35); }
+.zona-perigo h2 .lucide { color: var(--vermelho); }
+.botao-perigo {
+    color: #fff;
+    background: linear-gradient(180deg, #E8517A, #C93A63);
+    border-color: rgba(255, 150, 175, .6);
+    box-shadow: 0 6px 20px rgba(220, 60, 100, .3);
+}
+.botao-perigo:hover { box-shadow: 0 8px 26px rgba(220, 60, 100, .5); }
+.rodape a { color: var(--acento); }
+
 /* ================= Tablet (e computador com janela estreita) ================= */
 @media (max-width: 960px) {
     /* Uma coluna só; os prazos sobem para antes das atividades (order: -1) */
@@ -849,6 +1148,8 @@ h2 .lucide, h3 .lucide { color: var(--acento); margin-right: 4px; }
     .bloco-prazos { position: static; }
     .resumo { grid-template-columns: repeat(2, 1fr); }
     .atividade-corpo { grid-template-columns: minmax(0, 1fr); }
+    .hero-home { grid-template-columns: 1fr; }
+    .cena-3d { max-width: 520px; width: 100%; margin: 0 auto; }
 }
 
 /* ================= Celular ================= */
@@ -885,10 +1186,20 @@ h2 .lucide, h3 .lucide { color: var(--acento); margin-right: 4px; }
     .acoes .botao { flex: 1; }
     .acoes form { flex: 1; }
     .acoes select.etiqueta { width: 100%; }
-    /* No celular, o menu de cima mostra só os ícones (o texto não cabe) */
-    .nav-texto { display: none; }
     .meu-id { flex-wrap: wrap; }
     .meu-id .codigo { width: 100%; justify-content: center; }
-    .topo nav a.nav-link { padding: 9px 11px; }
-    .nav-link .lucide { width: 19px; height: 19px; }
+
+    /* Menu: no celular os links de cima somem e aparece a barra de baixo (com ícone E nome) */
+    .topo nav a.nav-link { display: none; }
+    .barra-inferior { display: flex; }
+    /* Espaço no fim da página para o conteúdo não ficar escondido atrás da barra */
+    body.logado { padding-bottom: calc(76px + env(safe-area-inset-bottom)); }
+    .botao-flutuante { right: 16px; bottom: calc(88px + env(safe-area-inset-bottom)); width: 54px; height: 54px; }
+
+    /* Página inicial: uma coluna; a cena 3D vai para baixo do texto, menor */
+    .hero-home { grid-template-columns: 1fr; gap: 8px; margin-top: 4px; }
+    .hero-acoes { flex-direction: column; }
+    .hero-acoes .botao { width: 100%; }
+    .cena-3d { height: 330px; transform: scale(.78); transform-origin: top center; margin: 0 -30px -40px; }
+    .texto-legal { padding: 22px 18px; }
 }

@@ -1,12 +1,16 @@
-"""Página "Editar perfil": trocar foto, nome e e-mail."""
+"""Página "Editar perfil": foto, nome, e-mail e os direitos da LGPD (baixar dados e excluir conta)."""
+import json
 import os
 import re
 import uuid
 
-from flask import Blueprint, current_app, flash, redirect, render_template, request, url_for
-from flask_login import current_user, login_required
+from flask import Blueprint, Response, current_app, flash, redirect, render_template, request, url_for
+from flask_login import current_user, login_required, logout_user
 
-from models import Usuario, db
+from datas import agora_brasil
+from models import Amizade, CodigoSenha, MembroGrupo, SolicitacaoAmizade, Usuario, db, ordenar_atividades
+from lembretes import ler_token_desligar
+from uploads import apagar_arquivos_da_atividade
 
 perfil = Blueprint("perfil", __name__, url_prefix="/perfil")
 
@@ -120,3 +124,117 @@ def trocar_email():
     return redirect(url_for("perfil.editar"))
 
 
+# =====================================================================
+#  LGPD: baixar meus dados e excluir conta
+# =====================================================================
+
+@perfil.route("/meus-dados")
+@login_required
+def baixar_dados():
+    """Gera um arquivo .json com TUDO que o CampusHub guarda sobre a pessoa (direito de acesso da LGPD)."""
+    u = current_user
+    dados = {
+        "gerado_em": agora_brasil().strftime("%d/%m/%Y %H:%M"),
+        "conta": {
+            "nome": u.nome,
+            "email": u.email,
+            "id_campushub": u.codigo,
+            "conta_criada_em": u.criado_em.strftime("%d/%m/%Y %H:%M") if u.criado_em else None,
+            "tem_foto": bool(u.foto),
+        },
+        "colegas": [{"nome": c.nome, "id_campushub": c.codigo} for c in u.lista_colegas()],
+        "materias": [
+            {
+                "nome": m.nome,
+                "professor": m.professor,
+                "semestre": m.semestre,
+                "cor": m.cor,
+                "atividades": [
+                    {
+                        "titulo": a.titulo,
+                        "tipo": a.tipo,
+                        "status": a.status,
+                        "prioridade": a.prioridade,
+                        "em_grupo": a.em_grupo,
+                        "data_entrega": a.data_entrega.strftime("%d/%m/%Y") if a.data_entrega else None,
+                        "descricao": a.descricao,
+                        "arquivos": [arq.nome_original for arq in a.arquivos],
+                        "grupo": [mb.usuario.nome for mb in a.membros],
+                    }
+                    for a in ordenar_atividades(m.atividades)
+                ],
+            }
+            for m in u.materias
+        ],
+    }
+    conteudo = json.dumps(dados, ensure_ascii=False, indent=2)
+    # Content-Disposition: attachment -> o navegador baixa o arquivo em vez de mostrar na tela
+    return Response(conteudo, mimetype="application/json",
+                    headers={"Content-Disposition": "attachment; filename=meus-dados-campushub.json"})
+
+
+@perfil.route("/excluir-conta", methods=["POST"])
+@login_required
+def excluir_conta():
+    """Apaga a conta e TUDO ligado a ela (direito de eliminação da LGPD)."""
+    if not current_user.verificar_senha(request.form.get("senha", "")):
+        flash("Senha incorreta. A conta NÃO foi excluída.", "erro")
+        return redirect(url_for("perfil.editar"))
+
+    usuario = db.session.get(Usuario, current_user.id)
+
+    # 1) Arquivos no disco: anexos das atividades e a foto
+    for materia in usuario.materias:
+        for atividade in materia.atividades:
+            apagar_arquivos_da_atividade(atividade.id)
+    apagar_foto_atual()
+
+    # 2) Ligações com outras pessoas: amizades (os dois lados) e participação em grupos de outros
+    Amizade.query.filter(db.or_(Amizade.usuario_id == usuario.id, Amizade.colega_id == usuario.id)).delete()
+    MembroGrupo.query.filter_by(usuario_id=usuario.id).delete()
+    CodigoSenha.query.filter_by(usuario_id=usuario.id).delete()
+    SolicitacaoAmizade.query.filter(
+        db.or_(SolicitacaoAmizade.de_id == usuario.id, SolicitacaoAmizade.para_id == usuario.id)
+    ).delete()
+
+    # 3) A conta: as matérias vão junto (cascade), e com elas atividades, arquivos e grupos
+    logout_user()
+    db.session.delete(usuario)
+    db.session.commit()
+
+    flash("Sua conta e todos os seus dados foram excluídos. Sentiremos sua falta!", "sucesso")
+    return redirect(url_for("home"))
+
+
+# =====================================================================
+#  Lembretes por e-mail: ligar/desligar
+# =====================================================================
+
+@perfil.route("/lembretes", methods=["POST"])
+@login_required
+def trocar_lembretes():
+    current_user.lembretes_email = "lembretes" in request.form  # checkbox marcado = ligado
+    db.session.commit()
+    flash("Lembretes por e-mail ligados!" if current_user.lembretes_email else "Lembretes por e-mail desligados.", "sucesso")
+    return redirect(url_for("perfil.editar"))
+
+
+@perfil.route("/lembretes/desligar/<token>", methods=["GET", "POST"])
+def desligar_pelo_email(token):
+    """O link "Não quero mais receber" do e-mail. Funciona sem login.
+
+    Abrir o link (GET) só MOSTRA a página com um botão; quem desliga é o clique (POST).
+    Motivo: alguns programas de e-mail "abrem" os links sozinhos para checar se são
+    seguros — se o GET já desligasse, os lembretes sumiriam sem a pessoa pedir.
+    """
+    usuario_id = ler_token_desligar(current_app.config["SECRET_KEY"], token)
+    usuario = db.session.get(Usuario, usuario_id) if usuario_id else None
+    if usuario is None:
+        flash("Esse link não é válido.", "erro")
+        return redirect(url_for("home"))
+
+    if request.method == "POST":
+        usuario.lembretes_email = False
+        db.session.commit()
+        return render_template("lembretes_desligar.html", feito=True)
+    return render_template("lembretes_desligar.html", feito=False)
